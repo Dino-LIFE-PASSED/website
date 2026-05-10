@@ -6,8 +6,6 @@
 
 <script>
   const partnerbar = document.querySelector('.partners-section')
-  document.documentElement.style.setProperty('--partnerbar-height', partnerbar.offsetHeight + 'px')
-
   const track = document.getElementById('track')
 
   function fill() {
@@ -28,6 +26,7 @@
         track.appendChild(img)
       })
       fill()
+      document.documentElement.style.setProperty('--partnerbar-height', partnerbar.offsetHeight + 'px')
     })
 
   window.addEventListener('resize', fill)

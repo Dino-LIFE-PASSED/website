@@ -10,10 +10,6 @@
     <li><a href="#">contact</a></li>
   </ul>
 
-  <div class="nav-right">
-    <button id="themeToggle" class="theme-toggle">dark mode</button>
-  </div>
-
   <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
     <span></span>
     <span></span>
@@ -34,13 +30,4 @@
     toggle.setAttribute('aria-expanded', isOpen)
   })
   
-  /* Dark mode toggle logic */
-  const html        = document.documentElement
-    const themeBtn    = document.getElementById('themeToggle')
-
-    themeBtn.addEventListener('click', () => {
-      const isDark = html.getAttribute('data-theme') === 'dark'
-      html.setAttribute('data-theme', isDark ? 'light' : 'dark')
-      themeBtn.textContent = isDark ? 'dark mode' : 'light mode'
-    })
 </script>

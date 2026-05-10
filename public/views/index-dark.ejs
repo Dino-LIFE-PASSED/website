@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PAG — Pro Audio Gadgets</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    [data-theme="dark"] {
+      --bg:     #0a0a0a;
+      --text:   #f0f0f0;
+      --muted:  #666666;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+
+    [data-theme="dark"] .navbar {
+      background: rgba(10, 10, 10, 0.85);
+    }
+
+    [data-theme="dark"] .partners-track-wrapper::before {
+      background: linear-gradient(to right, #0a0a0a, transparent);
+    }
+
+    [data-theme="dark"] .partners-track-wrapper::after {
+      background: linear-gradient(to left, #0a0a0a, transparent);
+    }
+
+    /* [data-theme="dark"] .nav-logo-img {
+      filter: invert(1);
+    } */
+
+    [data-theme="dark"] .partner-logo {
+      filter: grayscale(100%) invert(1);
+      opacity: 0.5;
+    }
+
+    [data-theme="dark"] .partner-logo:hover {
+      filter: grayscale(0%) invert(0);
+      opacity: 1;
+    }
+
+    /* Dark mode toggle button */
+    .theme-toggle {
+      position: fixed;
+      top: 1.2rem;
+      right: 1.2rem;
+      z-index: 200;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.8rem;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .theme-toggle:hover {
+      color: var(--text);
+      border-color: var(--text);
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('partials/navbar') %>
+  <%- include('partials/partners') %>
+  <%- include('partials/wave') %>
+
+  <main class="hero">
+    <p class="hero-tag">pro audio gadgets co., ltd.</p>
+    <h1 class="hero-title">sound tools<br/>built different.</h1>
+    <p class="hero-sub">Professional audio equipment for creators, engineers, and performers.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">explore products</a>
+      <a href="#" class="btn-ghost">our work</a>
+    </div>
+  </main>
+
+  <button class="theme-toggle" id="themeToggle">light mode</button>
+
+  <script>
+    const html        = document.documentElement
+    const themeBtn    = document.getElementById('themeToggle')
+
+    themeBtn.addEventListener('click', () => {
+      const isDark = html.getAttribute('data-theme') === 'dark'
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark')
+      themeBtn.textContent = isDark ? 'dark mode' : 'light mode'
+    })
+  </script>
+
+</body>
+</html>

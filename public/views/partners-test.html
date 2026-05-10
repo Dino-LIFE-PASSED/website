@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partners Test</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #ffffff;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      color: #999;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+    }
+
+    .partners-section {
+      width: 100%;
+      overflow: hidden;
+      padding: 2rem 0;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      border-bottom: 1px solid rgba(0,0,0,0.08);
+    }
+
+    /* Fade edges */
+    .partners-track-wrapper {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .partners-track-wrapper::before,
+    .partners-track-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      width: 120px;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .partners-track-wrapper::before {
+      left: 0;
+      background: linear-gradient(to right, #ffffff, transparent);
+    }
+
+    .partners-track-wrapper::after {
+      right: 0;
+      background: linear-gradient(to left, #ffffff, transparent);
+    }
+
+    /* Scrolling track — duplicated for seamless loop */
+    .partners-track {
+      display: flex;
+      align-items: center;
+      gap: 4rem;
+      width: max-content;
+      animation: scroll-left 20s linear infinite;
+    }
+
+    .partners-track:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .partner-logo {
+      height: 24px;
+      width: auto;
+      opacity: 0.5;
+      filter: grayscale(100%);
+      transition: opacity 0.3s, filter 0.3s;
+      flex-shrink: 0;
+    }
+
+    .partner-logo:hover {
+      opacity: 1;
+      filter: grayscale(0%);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="partners-section">
+    <div class="partners-track-wrapper">
+      <div class="partners-track" id="track"></div>
+    </div>
+  </div>
+
+  <script>
+    const track = document.getElementById('track')
+
+    function fill() {
+      const original = Array.from(track.children)
+      while (track.scrollWidth < window.innerWidth * 2) {
+        original.forEach(el => track.appendChild(el.cloneNode(true)))
+      }
+    }
+
+    fetch('/api/logos')
+      .then(res => res.json())
+      .then(files => {
+        files.forEach(file => {
+          const img = document.createElement('img')
+          img.className = 'partner-logo'
+          img.src = `/svg/${file}`
+          img.alt = file.replace(/\.(svg|png)$/, '')
+          track.appendChild(img)
+        })
+        fill()
+      })
+
+    window.addEventListener('resize', fill)
+  </script>
+
+</body>
+</html>

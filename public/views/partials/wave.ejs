@@ -1,0 +1,95 @@
+<div class="wave-container">
+    <canvas id="wave"></canvas>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('wave')
+    const ctx    = canvas.getContext('2d')
+
+    const PIXEL = 6
+    const GAP   = 1
+    const ROWS  = 20
+    const LERP  = 0.06
+
+    let cols    = 0
+    let heights = []
+    let offsets = []
+    let tick    = 0
+
+    function resize() {
+      cols = Math.ceil(window.innerWidth / PIXEL)
+      canvas.width        = cols * PIXEL
+      canvas.height       = ROWS * PIXEL
+      canvas.style.width  = window.innerWidth + 'px'
+      canvas.style.height = (ROWS * PIXEL) + 'px'
+      heights = Array(cols).fill(0)
+      offsets = Array.from({ length: cols }, () => [
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+      ])
+    }
+    resize()
+    window.addEventListener('resize', resize)
+
+    function glowColor(col) {
+      const hue = (col / cols) * 360
+      return `hsl(${hue}, 100%, 45%)`
+    }
+
+    function getTarget(col) {
+      const n = col / cols
+      const [o1, o2, o3] = offsets[col]
+
+      const a = Math.sin(tick * 0.018 + o1)
+      const b = Math.sin(tick * 0.033 + o2)
+      const c = Math.sin(tick * 0.055 + o3)
+
+      let e = (a * 0.5 + b * 0.35 + c * 0.25 + 1) * 0.5
+      e *= 0.90 - n * 0.30
+
+      return Math.max(1, Math.min(ROWS, e * ROWS))
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+
+      // Update heights
+      for (let c = 0; c < cols; c++) {
+        heights[c] += (getTarget(c) - heights[c]) * LERP
+      }
+
+      // Pass 1 — rainbow aura glow behind all pixels
+      ctx.shadowBlur = 18
+      for (let c = 0; c < cols; c++) {
+        const filled = Math.round(heights[c])
+        const x      = c * PIXEL
+        const glow   = glowColor(c)
+        ctx.shadowColor = glow
+        ctx.fillStyle   = glow
+        for (let r = 0; r < filled; r++) {
+          const y = (ROWS - 1 - r) * PIXEL
+          ctx.fillRect(x + GAP, y + GAP, PIXEL - GAP * 2, PIXEL - GAP * 2)
+        }
+      }
+
+      // Pass 2 — clean pixels on top, color follows theme
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+      ctx.shadowBlur  = 0
+      ctx.shadowColor = 'transparent'
+      ctx.fillStyle   = isDark ? '#000000' : '#ffffff'
+      for (let c = 0; c < cols; c++) {
+        const filled = Math.round(heights[c])
+        const x      = c * PIXEL
+        for (let r = 0; r < filled; r++) {
+          const y = (ROWS - 1 - r) * PIXEL
+          ctx.fillRect(x + GAP, y + GAP, PIXEL - GAP * 2, PIXEL - GAP * 2)
+        }
+      }
+
+      tick++
+      requestAnimationFrame(draw)
+    }
+
+    draw()
+  </script>

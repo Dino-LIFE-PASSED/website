@@ -1,0 +1,46 @@
+<nav class="navbar">
+  <a href="/" class="nav-logo">
+    <img src="/images/pag_logo.png" alt="Pro Audio Gadgets" class="nav-logo-img" />
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#">about</a></li>
+    <li><a href="#">products</a></li>
+    <li><a href="#">phones eq</a></li>
+    <li><a href="#">contact</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <button id="themeToggle" class="theme-toggle">dark mode</button>
+  </div>
+
+  <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+    <span></span>
+    <span></span>
+  </button>
+</nav>
+
+<script>
+  /* Mobile menu toggle logic */
+  const navbar = document.querySelector('.navbar')
+  
+  document.documentElement.style.setProperty('--navbar-height', navbar.offsetHeight + 'px')
+
+  const toggle = document.querySelector('.nav-toggle')
+  const navLinks = document.querySelector('.nav-links')
+
+  toggle.addEventListener('click', () => {
+    const isOpen = navLinks.classList.toggle('open')
+    toggle.setAttribute('aria-expanded', isOpen)
+  })
+  
+  /* Dark mode toggle logic */
+  const html        = document.documentElement
+    const themeBtn    = document.getElementById('themeToggle')
+
+    themeBtn.addEventListener('click', () => {
+      const isDark = html.getAttribute('data-theme') === 'dark'
+      html.setAttribute('data-theme', isDark ? 'light' : 'dark')
+      themeBtn.textContent = isDark ? 'dark mode' : 'light mode'
+    })
+</script>

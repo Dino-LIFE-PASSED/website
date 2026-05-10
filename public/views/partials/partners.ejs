@@ -1,27 +1,34 @@
- <div class="partners-section">
-    <div class="partners-track-wrapper">
-      <div class="partners-track" id="track">
-
-        <!-- Original set — replace src with real logo paths -->
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Harmonix_Music_Systems_logo.svg" alt="Partner 2" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Harmonix_Music_Systems_logo.svg" alt="Partner 5" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" />
-
-        <!-- Duplicate set for seamless loop -->
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" alt="Amazon" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Harmonix_Music_Systems_logo.svg" alt="Partner 2" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg" alt="Microsoft" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" alt="Apple" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Harmonix_Music_Systems_logo.svg" alt="Partner 5" />
-        <img class="partner-logo" src="https://upload.wikimedia.org/wikipedia/commons/5/51/IBM_logo.svg" alt="IBM" />
-
-      </div>
-    </div>
+<div class="partners-section">
+  <div class="partners-track-wrapper">
+    <div class="partners-track" id="track"></div>
   </div>
-  <script>
-    const parterbar = document.querySelector('.partners-section')
-    document.documentElement.style.setProperty('--partnerbar-height', parterbar.offsetHeight + 'px')
-  </script>
+</div>
+
+<script>
+  const partnerbar = document.querySelector('.partners-section')
+  document.documentElement.style.setProperty('--partnerbar-height', partnerbar.offsetHeight + 'px')
+
+  const track = document.getElementById('track')
+
+  function fill() {
+    const original = Array.from(track.children)
+    while (track.scrollWidth < window.innerWidth * 2) {
+      original.forEach(el => track.appendChild(el.cloneNode(true)))
+    }
+  }
+
+  fetch('/api/logos')
+    .then(res => res.json())
+    .then(files => {
+      files.forEach(file => {
+        const img = document.createElement('img')
+        img.className = 'partner-logo'
+        img.src = `/svg/${file}`
+        img.alt = file.replace(/\.(svg|png)$/, '')
+        track.appendChild(img)
+      })
+      fill()
+    })
+
+  window.addEventListener('resize', fill)
+</script>

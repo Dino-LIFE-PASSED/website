@@ -724,10 +724,59 @@ canvas {
   overflow: hidden;
 }
 
-.pd-image {
-  background: var(--border);
+.pd-gallery {
+  display: grid;
+  grid-template-columns: 30% 1fr;
   border-bottom: 1px solid var(--border);
   min-height: 0;
+  overflow: hidden;
+}
+
+.pd-thumbs {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  background: var(--border);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.pd-thumbs::-webkit-scrollbar { display: none; }
+
+.pd-thumb {
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  background: var(--surface, #f5f5f5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  opacity: 0.5;
+  transition: opacity 0.15s;
+}
+.pd-thumb:hover { opacity: 0.8; }
+.pd-thumb.active { opacity: 1; outline: 2px solid var(--text); outline-offset: -2px; }
+
+.pd-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pd-main-img {
+  background: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.pd-main-img img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
 }
 
 .pd-io {

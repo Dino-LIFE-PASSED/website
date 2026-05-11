@@ -13,8 +13,32 @@
 
   <div class="pd-page">
 
-    <!-- Row 1: Image -->
-    <div class="pd-image"></div>
+    <!-- Row 1: Gallery -->
+    <div class="pd-gallery">
+      <div class="pd-thumbs">
+        <% product.images.forEach(function(img, i) { %>
+        <div class="pd-thumb <%= i === 0 ? 'active' : '' %>" data-src="<%= img %>" data-index="<%= i %>">
+          <img src="<%= img %>" alt="<%= product.name %> view <%= i + 1 %>" loading="lazy" onerror="this.style.display='none'" />
+        </div>
+        <% }) %>
+      </div>
+      <div class="pd-main-img" id="pd-main-img">
+        <img src="<%= product.images[0] %>" alt="<%= product.name %>" id="pd-main-img-el" onerror="this.style.display='none'" />
+      </div>
+    </div>
+
+    <script>
+      const thumbs = document.querySelectorAll('.pd-thumb')
+      const mainImg = document.getElementById('pd-main-img-el')
+      thumbs.forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          thumbs.forEach(t => t.classList.remove('active'))
+          thumb.classList.add('active')
+          mainImg.src = thumb.dataset.src
+          mainImg.style.display = ''
+        })
+      })
+    </script>
 
     <!-- Row 2: IO Diagram -->
     <div class="pd-io">

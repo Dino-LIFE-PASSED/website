@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Detail Test</title>
+  <link rel="stylesheet" href="/views/style.css" />
+</head>
+<body>
+
+  <!-- ==================== NAVBAR ==================== -->
+  <nav class="navbar">
+    <a href="/" class="nav-logo">
+      <img src="/images/pag_logo.png" alt="Pro Audio Gadgets" class="nav-logo-img" />
+    </a>
+    <ul class="nav-links">
+      <li><a href="#">about</a></li>
+      <li><a href="/products">products</a></li>
+      <li><a href="#">phones eq</a></li>
+      <li><a href="#">contact</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span>
+      <span></span>
+    </button>
+  </nav>
+
+  <!-- ==================== WAVE ==================== -->
+  <div class="wave-container">
+    <canvas id="wave"></canvas>
+  </div>
+
+  <!-- ==================== PAGE ==================== -->
+  <div class="pd-page">
+
+    <!-- Row 1: Image -->
+    <div class="pd-image"></div>
+
+    <!-- Row 2: IO Diagram -->
+    <div class="pd-io">
+
+      <div class="io-side io-inputs">
+        <p class="io-label">inputs</p>
+        <div class="io-item">
+          <span class="io-count">×2</span>
+          <span class="io-name">XLR Balanced</span>
+          <img src="/svg/svgviewer-output.svg" class="io-icon" alt="XLR" />
+          <span class="io-line"></span>
+          <span class="io-dot"></span>
+        </div>
+        <div class="io-item">
+          <span class="io-count">×1</span>
+          <span class="io-name">TRS 1/4"</span>
+          <img src="/svg/svgviewer-output-2.svg" class="io-icon" alt="TRS" />
+          <span class="io-line"></span>
+          <span class="io-dot"></span>
+        </div>
+        <div class="io-item">
+          <span class="io-count">×1</span>
+          <span class="io-name">RCA</span>
+          <img src="/svg/svgviewer-output-3.svg" class="io-icon" alt="RCA" />
+          <span class="io-line"></span>
+          <span class="io-dot"></span>
+        </div>
+      </div>
+
+      <div class="io-center"></div>
+
+      <div class="io-side io-outputs">
+        <p class="io-label">outputs</p>
+        <div class="io-item">
+          <span class="io-dot"></span>
+          <span class="io-line"></span>
+          <img src="/svg/svgviewer-output-4.svg" class="io-icon" alt="Speaker" />
+          <span class="io-name">Speaker Driver</span>
+          <span class="io-count">×2</span>
+        </div>
+        <div class="io-item">
+          <span class="io-dot"></span>
+          <span class="io-line"></span>
+          <img src="/svg/svgviewer-output-5.svg" class="io-icon" alt="Headphone" />
+          <span class="io-name">Headphone 1/4"</span>
+          <span class="io-count">×1</span>
+        </div>
+        <div class="io-item">
+          <span class="io-dot"></span>
+          <span class="io-line"></span>
+          <img src="/svg/svgviewer-output-6.svg" class="io-icon" alt="Sub Out" />
+          <span class="io-name">Sub Out</span>
+          <span class="io-count">×1</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Info + Specs -->
+    <div class="pd-body">
+
+      <div class="pd-info">
+        <span class="pd-badge">featured</span>
+        <h1 class="pd-name">PAG-X1 Monitor</h1>
+        <p class="pd-price">$299</p>
+        <p class="pd-desc">Reference-grade studio monitor engineered for flat frequency response and zero coloration. Built for mixing and mastering engineers who need the truth — no flattery, no distortion.</p>
+        <div class="pd-actions">
+          <a href="#" class="btn-primary">buy now</a>
+          <a href="#" class="btn-ghost">contact us</a>
+        </div>
+      </div>
+
+      <div class="pd-specs">
+        <p class="pd-specs-label">specifications</p>
+        <table class="specs-table">
+          <tr><td>Frequency Response</td><td>45Hz – 20kHz</td></tr>
+          <tr><td>Driver</td><td>5" woofer + 1" tweeter</td></tr>
+          <tr><td>Impedance</td><td>8 Ω</td></tr>
+          <tr><td>Max SPL</td><td>105 dB</td></tr>
+          <tr><td>Weight</td><td>6.5 kg</td></tr>
+          <tr><td>Dimensions</td><td>200 × 280 × 240 mm</td></tr>
+          <tr><td>Power</td><td>60W RMS</td></tr>
+          <tr><td>Warranty</td><td>2 years</td></tr>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+  <style>
+    /* --- Page: 3-row grid, fills viewport --- */
+    .pd-page {
+      height: calc(100vh - var(--navbar-height));
+      display: grid;
+      grid-template-rows: 35vh auto 1fr;
+      overflow: hidden;
+    }
+
+    /* --- Row 1: Image --- */
+    .pd-image {
+      background: var(--border);
+      border-bottom: 1px solid var(--border);
+      min-height: 0;
+    }
+
+    /* --- Row 2: IO Diagram --- */
+    .pd-io {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.02);
+    }
+
+    .io-side {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .io-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.4rem;
+    }
+
+    .io-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .io-inputs .io-item {
+      justify-content: flex-end;
+    }
+
+    .io-name {
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .io-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      min-width: 1.5rem;
+    }
+
+    .io-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text);
+      flex-shrink: 0;
+    }
+
+    .io-center {
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+
+    .io-icon {
+      height: 22px;
+      width: auto;
+      opacity: 0.5;
+      flex-shrink: 0;
+    }
+
+    .io-count {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    /* --- Row 3: Info + Specs --- */
+    .pd-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      padding: 2rem 3rem 120px;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .pd-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .pd-badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    .pd-name {
+      font-size: clamp(1.2rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+
+    .pd-price {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .pd-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.8;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      line-clamp: 4;
+      -webkit-box-orient: vertical;
+    }
+
+    .pd-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: auto;
+    }
+
+    .pd-specs {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .pd-specs-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    .specs-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .specs-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .specs-table tr:first-child {
+      border-top: 1px solid var(--border);
+    }
+
+    .specs-table td {
+      padding: 0.6rem 0;
+      font-size: 0.78rem;
+    }
+
+    .specs-table td:first-child {
+      color: var(--muted);
+      width: 45%;
+    }
+
+    .specs-table td:last-child {
+      color: var(--text);
+      font-weight: 700;
+    }
+  </style>
+
+  <script>
+    const navbar = document.querySelector('.navbar')
+    document.documentElement.style.setProperty('--navbar-height', navbar.offsetHeight + 'px')
+
+    const toggle = document.querySelector('.nav-toggle')
+    const navLinks = document.querySelector('.nav-links')
+    toggle.addEventListener('click', () => {
+      const isOpen = navLinks.classList.toggle('open')
+      toggle.setAttribute('aria-expanded', isOpen)
+    })
+
+    const canvas = document.getElementById('wave')
+    const ctx    = canvas.getContext('2d')
+    const PIXEL = 6, GAP = 1, ROWS = 20, LERP = 0.06
+    let cols = 0, heights = [], offsets = [], tick = 0
+    function resize() {
+      cols = Math.ceil(window.innerWidth / PIXEL)
+      canvas.width        = cols * PIXEL
+      canvas.height       = ROWS * PIXEL
+      canvas.style.width  = window.innerWidth + 'px'
+      canvas.style.height = (ROWS * PIXEL) + 'px'
+      heights = Array(cols).fill(0)
+      offsets = Array.from({ length: cols }, () => [
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+        Math.random() * Math.PI * 2,
+      ])
+    }
+    resize()
+    window.addEventListener('resize', resize)
+    function glowColor(col) { return `hsl(${(col / cols) * 360}, 100%, 45%)` }
+    function getTarget(col) {
+      const [o1, o2, o3] = offsets[col]
+      const a = Math.sin(tick * 0.018 + o1)
+      const b = Math.sin(tick * 0.033 + o2)
+      const c = Math.sin(tick * 0.055 + o3)
+      let e = (a * 0.5 + b * 0.35 + c * 0.25 + 1) * 0.5
+      e *= 0.90 - (col / cols) * 0.30
+      return Math.max(1, Math.min(ROWS, e * ROWS))
+    }
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      for (let c = 0; c < cols; c++) heights[c] += (getTarget(c) - heights[c]) * LERP
+      ctx.shadowBlur = 18
+      for (let c = 0; c < cols; c++) {
+        const filled = Math.round(heights[c])
+        const glow = glowColor(c)
+        ctx.shadowColor = glow
+        ctx.fillStyle   = glow
+        for (let r = 0; r < filled; r++)
+          ctx.fillRect(c * PIXEL + GAP, (ROWS - 1 - r) * PIXEL + GAP, PIXEL - GAP * 2, PIXEL - GAP * 2)
+      }
+      ctx.shadowBlur = 0
+      ctx.shadowColor = 'transparent'
+      ctx.fillStyle = '#ffffff'
+      for (let c = 0; c < cols; c++) {
+        const filled = Math.round(heights[c])
+        for (let r = 0; r < filled; r++)
+          ctx.fillRect(c * PIXEL + GAP, (ROWS - 1 - r) * PIXEL + GAP, PIXEL - GAP * 2, PIXEL - GAP * 2)
+      }
+      tick++
+      requestAnimationFrame(draw)
+    }
+    draw()
+  </script>
+
+</body>
+</html>

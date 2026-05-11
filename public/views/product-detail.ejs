@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= product.name %> — PAG</title>
+  <link rel="stylesheet" href="/views/style.css" />
+</head>
+<body>
+
+  <%- include('partials/navbar') %>
+  <%- include('partials/wave') %>
+
+  <div class="pd-page">
+
+    <!-- Row 1: Image -->
+    <div class="pd-image"></div>
+
+    <!-- Row 2: IO Diagram -->
+    <div class="pd-io">
+
+      <div class="io-side io-inputs">
+        <p class="io-label">inputs</p>
+        <% product.inputs.forEach(function(io) { %>
+        <div class="io-item">
+          <span class="io-count">×<%= io.count %></span>
+          <span class="io-name"><%= io.name %></span>
+          <img src="/svg/<%= io.icon %>" class="io-icon" alt="<%= io.name %>" />
+          <span class="io-line"></span>
+          <span class="io-dot"></span>
+        </div>
+        <% }) %>
+      </div>
+
+      <div class="io-center"></div>
+
+      <div class="io-side io-outputs">
+        <p class="io-label">outputs</p>
+        <% product.outputs.forEach(function(io) { %>
+        <div class="io-item">
+          <span class="io-dot"></span>
+          <span class="io-line"></span>
+          <img src="/svg/<%= io.icon %>" class="io-icon" alt="<%= io.name %>" />
+          <span class="io-name"><%= io.name %></span>
+          <span class="io-count">×<%= io.count %></span>
+        </div>
+        <% }) %>
+      </div>
+
+    </div>
+
+    <!-- Row 3: Info + Specs -->
+    <div class="pd-body">
+
+      <div class="pd-info">
+        <% if (product.badge) { %><span class="pd-badge"><%= product.badge %></span><% } %>
+        <h1 class="pd-name"><%= product.name %></h1>
+        <p class="pd-price">$<%= product.price %></p>
+        <p class="pd-desc"><%= product.desc %></p>
+        <div class="pd-actions">
+          <a href="#" class="btn-primary">buy now</a>
+          <a href="#" class="btn-ghost">contact us</a>
+        </div>
+      </div>
+
+      <div class="pd-specs">
+        <p class="pd-specs-label">specifications</p>
+        <table class="specs-table">
+          <% product.specs.forEach(function(s) { %>
+          <tr><td><%= s.label %></td><td><%= s.value %></td></tr>
+          <% }) %>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+
+</body>
+</html>

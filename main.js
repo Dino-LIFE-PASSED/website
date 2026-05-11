@@ -5,6 +5,14 @@ const fs = require("fs")
 const multer = require("multer")
 const db = require("./db")
 
+const PARTNERS_FILE = path.join(__dirname, "data/partners.json")
+function readPartners() {
+  try { return JSON.parse(fs.readFileSync(PARTNERS_FILE, "utf8")) } catch { return {} }
+}
+function writePartners(data) {
+  fs.writeFileSync(PARTNERS_FILE, JSON.stringify(data, null, 2))
+}
+
 const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 },
   storage: multer.diskStorage({
@@ -15,6 +23,22 @@ const upload = multer({
       cb(null, `${base}-${Date.now()}${ext}`)
     }
   })
+})
+
+const logoUpload = multer({
+  limits: { fileSize: 5 * 1024 * 1024 },
+  storage: multer.diskStorage({
+    destination: path.join(__dirname, "public/svg"),
+    filename: (req, file, cb) => {
+      const ext  = path.extname(file.originalname).toLowerCase()
+      const base = path.basename(file.originalname, ext).replace(/[^a-z0-9]/gi, '-').toLowerCase()
+      cb(null, `${base}-${Date.now()}${ext}`)
+    }
+  }),
+  fileFilter: (req, file, cb) => {
+    const ok = ['.svg', '.png'].includes(path.extname(file.originalname).toLowerCase())
+    cb(null, ok)
+  }
 })
 
 const app = express()
@@ -29,8 +53,9 @@ app.use(express.urlencoded({ extended: true }))
 
 app.get("/api/logos", (req, res) => {
   const dir = path.join(__dirname, "public/svg")
-  const files = fs.readdirSync(dir).filter(f => f.endsWith(".svg") || f.endsWith(".png"))
-  res.json(files)
+  const files = fs.readdirSync(dir).filter(f => /\.(svg|png)$/i.test(f)).sort()
+  const urls = readPartners()
+  res.json(files.map(file => ({ file, url: urls[file] || "" })))
 })
 
 app.get("/", async (req, res) => {
@@ -90,6 +115,40 @@ app.get("/admin/api/io-names", async (req, res) => {
 
 app.get("/admin", (req, res) => {
   res.render("admin/index")
+})
+
+app.get("/admin/partners", (req, res) => {
+  const dir = path.join(__dirname, "public/svg")
+  const files = fs.readdirSync(dir).filter(f => /\.(svg|png)$/i.test(f)).sort()
+  const urls = readPartners()
+  const logos = files.map(file => ({ file, url: urls[file] || "" }))
+  res.render("admin/partners", { logos })
+})
+
+app.post("/admin/partners/upload", logoUpload.single("logo"), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: "No file received" })
+  res.json({ ok: true, filename: req.file.filename })
+})
+
+app.post("/admin/partners/:filename/url", (req, res) => {
+  const filename = path.basename(req.params.filename)
+  let url = (req.body.url || "").trim()
+  if (url && !/^https?:\/\//i.test(url)) url = `https://${url}`
+  const data = readPartners()
+  if (url) { data[filename] = url } else { delete data[filename] }
+  writePartners(data)
+  res.json({ ok: true, url })
+})
+
+app.delete("/admin/partners/:filename", (req, res) => {
+  const filename = path.basename(req.params.filename)
+  const filepath = path.join(__dirname, "public/svg", filename)
+  if (!fs.existsSync(filepath)) return res.status(404).json({ error: "File not found" })
+  fs.unlinkSync(filepath)
+  const data = readPartners()
+  delete data[filename]
+  writePartners(data)
+  res.json({ ok: true })
 })
 
 app.get("/admin/products", async (req, res) => {

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Partners — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .admin-header a { font-size: 0.72rem; color: var(--muted); text-decoration: none; }
+    .admin-header a:hover { color: var(--text); }
+
+    .stats-row {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .stat-box { flex: 1; padding: 1.25rem 1.5rem; background: var(--bg); }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-box.warn .stat-value { color: var(--accent); }
+
+    /* Preview */
+    .preview-section {
+      margin-bottom: 2rem;
+      border: 1px solid var(--border);
+    }
+
+    .preview-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.02);
+    }
+
+    .preview-bar {
+      border-bottom: none;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 1px dashed var(--border);
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .upload-zone:hover, .upload-zone.drag-over { border-color: var(--text); background: rgba(0,0,0,0.02); }
+    .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-label { font-size: 0.78rem; color: var(--muted); pointer-events: none; }
+    .upload-label strong { color: var(--text); font-weight: 600; }
+    .upload-hint { font-size: 0.65rem; color: var(--muted); margin-top: 0.4rem; letter-spacing: 0.04em; }
+
+    .upload-status {
+      font-size: 0.72rem;
+      color: var(--muted);
+      margin-bottom: 1.5rem;
+      min-height: 1.2em;
+    }
+
+    /* Logo table */
+    .logo-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .logo-table th {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+    }
+
+    .logo-table td {
+      padding: 0.65rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .logo-table tr:last-child td { border-bottom: none; }
+    .logo-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+    .col-preview { width: 64px; }
+    .col-name { width: 200px; }
+    .col-url { }
+    .col-actions { width: 90px; text-align: right; }
+
+    .logo-preview {
+      width: 48px;
+      height: 32px;
+      object-fit: contain;
+      opacity: 0.65;
+      filter: grayscale(100%);
+      display: block;
+    }
+
+    .logo-filename {
+      font-size: 0.75rem;
+      color: var(--muted);
+      word-break: break-all;
+    }
+
+    .url-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .url-input {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 0.78rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.6rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .url-input:focus { border-color: var(--text); }
+    .url-input::placeholder { color: var(--muted); }
+
+    .btn-save-url {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-save-url:hover { border-color: var(--text); color: var(--text); }
+    .btn-save-url.saved { border-color: #2e7d32; color: #2e7d32; }
+
+    .btn-delete-logo {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.4rem 0.7rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-delete-logo:hover { border-color: var(--accent); color: var(--accent); }
+
+    .row-actions { display: flex; justify-content: flex-end; }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1>partners</h1>
+      <a href="/admin">← admin</a>
+    </div>
+
+    <%
+      const withUrl = logos.filter(l => l.url).length
+    %>
+
+    <!-- Live Preview -->
+    <div class="preview-section">
+      <p class="preview-label">live preview</p>
+      <div class="partners-section preview-bar">
+        <div class="partners-track-wrapper">
+          <div class="partners-track" id="preview-track"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value"><%= logos.length %></div>
+        <div class="stat-label">logos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value"><%= withUrl %></div>
+        <div class="stat-label">with url</div>
+      </div>
+      <div class="stat-box <%= logos.length - withUrl > 0 ? 'warn' : '' %>">
+        <div class="stat-value"><%= logos.length - withUrl %></div>
+        <div class="stat-label">no url</div>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="upload-zone" id="upload-zone">
+      <input type="file" id="logo-input" accept=".svg,.png" multiple />
+      <p class="upload-label"><strong>click to upload</strong> or drag & drop</p>
+      <p class="upload-hint">SVG or PNG · max 5 MB each</p>
+    </div>
+    <p class="upload-status" id="upload-status"></p>
+
+    <!-- Table -->
+    <% if (logos.length) { %>
+    <table class="logo-table" id="logo-table">
+      <thead>
+        <tr>
+          <th class="col-preview"></th>
+          <th class="col-name">filename</th>
+          <th class="col-url">website url</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody id="logo-tbody">
+        <% logos.forEach(function(logo) { %>
+        <tr id="row-<%= encodeURIComponent(logo.file) %>">
+          <td class="col-preview">
+            <img class="logo-preview" src="/svg/<%= logo.file %>" alt="<%= logo.file %>" />
+          </td>
+          <td class="col-name">
+            <span class="logo-filename"><%= logo.file %></span>
+          </td>
+          <td class="col-url">
+            <div class="url-row">
+              <input class="url-input" type="url" placeholder="https://partner-website.com"
+                value="<%= logo.url %>" data-file="<%= logo.file %>" />
+              <button class="btn-save-url" onclick="saveUrl('<%= logo.file %>', this)">save</button>
+            </div>
+          </td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <button class="btn-delete-logo" onclick="deleteLogo('<%= logo.file %>', this)">delete</button>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state" id="empty-state">no logos yet — upload one above</div>
+    <% } %>
+
+  </div>
+
+  <script>
+  ;(function () {
+    const input  = document.getElementById('logo-input')
+    const zone   = document.getElementById('upload-zone')
+    const status = document.getElementById('upload-status')
+
+    /* Live preview */
+    const previewTrack = document.getElementById('preview-track')
+    function buildPreview() {
+      previewTrack.innerHTML = ''
+      fetch('/api/logos')
+        .then(r => r.json())
+        .then(logos => {
+          logos.forEach(({ file, url }) => {
+            const img = document.createElement('img')
+            img.className = 'partner-logo'
+            img.src = `/svg/${file}`
+            img.alt = file.replace(/\.(svg|png)$/, '')
+            if (url) {
+              const a = document.createElement('a')
+              a.href = /^https?:\/\//i.test(url) ? url : `https://${url}`
+              a.target = '_blank'; a.rel = 'noopener noreferrer'
+              a.appendChild(img); previewTrack.appendChild(a)
+            } else {
+              previewTrack.appendChild(img)
+            }
+          })
+          const orig = Array.from(previewTrack.children)
+          if (!orig.length) return
+          while (previewTrack.scrollWidth < window.innerWidth * 2) {
+            orig.forEach(el => previewTrack.appendChild(el.cloneNode(true)))
+          }
+        })
+    }
+    buildPreview()
+
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over') })
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'))
+    zone.addEventListener('drop', e => {
+      e.preventDefault()
+      zone.classList.remove('drag-over')
+      uploadFiles(Array.from(e.dataTransfer.files))
+    })
+    input.addEventListener('change', () => { uploadFiles(Array.from(input.files)); input.value = '' })
+
+    async function uploadFiles(files) {
+      const valid = files.filter(f => /\.(svg|png)$/i.test(f.name))
+      if (!valid.length) { status.textContent = 'only SVG or PNG files accepted'; return }
+      status.textContent = `uploading ${valid.length} file(s)…`
+      for (const file of valid) {
+        const fd = new FormData()
+        fd.append('logo', file)
+        try {
+          const res  = await fetch('/admin/partners/upload', { method: 'POST', body: fd })
+          const data = await res.json()
+          if (!data.ok) throw new Error(data.error)
+          addRow(data.filename, '')
+        } catch (err) {
+          status.textContent = 'upload failed: ' + err.message
+          return
+        }
+      }
+      status.textContent = `${valid.length} logo(s) uploaded`
+      document.getElementById('empty-state')?.remove()
+      buildPreview()
+    }
+
+    function addRow(filename, url) {
+      let tbody = document.getElementById('logo-tbody')
+      if (!tbody) {
+        const table = document.createElement('table')
+        table.className = 'logo-table'
+        table.id = 'logo-table'
+        table.innerHTML = `<thead><tr>
+          <th class="col-preview"></th>
+          <th class="col-name">filename</th>
+          <th class="col-url">website url</th>
+          <th class="col-actions"></th>
+        </tr></thead><tbody id="logo-tbody"></tbody>`
+        document.querySelector('.admin-page').appendChild(table)
+        tbody = document.getElementById('logo-tbody')
+      }
+      const enc = encodeURIComponent(filename)
+      const tr = document.createElement('tr')
+      tr.id = `row-${enc}`
+      tr.innerHTML = `
+        <td class="col-preview"><img class="logo-preview" src="/svg/${filename}" alt="${filename}" /></td>
+        <td class="col-name"><span class="logo-filename">${filename}</span></td>
+        <td class="col-url">
+          <div class="url-row">
+            <input class="url-input" type="url" placeholder="https://partner-website.com"
+              value="${url}" data-file="${filename}" />
+            <button class="btn-save-url" onclick="saveUrl('${filename}', this)">save</button>
+          </div>
+        </td>
+        <td class="col-actions">
+          <div class="row-actions">
+            <button class="btn-delete-logo" onclick="deleteLogo('${filename}', this)">delete</button>
+          </div>
+        </td>`
+      tbody.appendChild(tr)
+    }
+
+    window.saveUrl = async function(filename, btn) {
+      const input = btn.closest('tr').querySelector('.url-input')
+      btn.disabled = true
+      btn.textContent = '…'
+      try {
+        const res  = await fetch(`/admin/partners/${encodeURIComponent(filename)}/url`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `url=${encodeURIComponent(input.value)}`
+        })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        if (data.url) input.value = data.url
+        btn.textContent = 'saved'
+        btn.classList.add('saved')
+        setTimeout(() => { btn.textContent = 'save'; btn.classList.remove('saved') }, 2000)
+      } catch (err) {
+        alert('Save failed: ' + err.message)
+        btn.textContent = 'save'
+      }
+      btn.disabled = false
+    }
+
+    window.deleteLogo = async function(filename, btn) {
+      if (!confirm(`Delete "${filename}"?`)) return
+      btn.disabled = true
+      btn.textContent = '…'
+      try {
+        const res  = await fetch(`/admin/partners/${encodeURIComponent(filename)}`, { method: 'DELETE' })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        document.getElementById(`row-${encodeURIComponent(filename)}`)?.remove()
+        buildPreview()
+      } catch (err) {
+        alert('Delete failed: ' + err.message)
+        btn.disabled = false
+        btn.textContent = 'delete'
+      }
+    }
+  })()
+  </script>
+
+</body>
+</html>

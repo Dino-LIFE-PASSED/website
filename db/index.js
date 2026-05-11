@@ -36,4 +36,76 @@ async function getAllProducts() {
   return rows
 }
 
-module.exports = { pool, getProductBySlug, getAllProducts }
+async function createProduct(data) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const { rows } = await client.query(
+      'INSERT INTO products (slug, name, badge, price, description) VALUES ($1,$2,$3,$4,$5) RETURNING id',
+      [data.slug, data.name, data.badge || null, data.price, data.desc]
+    )
+    const id = rows[0].id
+    await _insertRelated(client, id, data)
+    await client.query('COMMIT')
+  } catch (e) {
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+  }
+}
+
+async function updateProduct(slug, data) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const { rows } = await client.query(
+      'UPDATE products SET name=$1, badge=$2, price=$3, description=$4, slug=$5 WHERE slug=$6 RETURNING id',
+      [data.name, data.badge || null, data.price, data.desc, data.slug, slug]
+    )
+    if (!rows.length) throw new Error('Product not found')
+    const id = rows[0].id
+    await client.query('DELETE FROM product_images  WHERE product_id=$1', [id])
+    await client.query('DELETE FROM product_inputs  WHERE product_id=$1', [id])
+    await client.query('DELETE FROM product_outputs WHERE product_id=$1', [id])
+    await client.query('DELETE FROM product_specs   WHERE product_id=$1', [id])
+    await _insertRelated(client, id, data)
+    await client.query('COMMIT')
+  } catch (e) {
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+  }
+}
+
+async function _insertRelated(client, id, data) {
+  for (let i = 0; i < data.images.length; i++)
+    await client.query('INSERT INTO product_images (product_id, path, sort_order) VALUES ($1,$2,$3)',
+      [id, data.images[i], i])
+
+  for (let i = 0; i < data.inputs.length; i++)
+    await client.query('INSERT INTO product_inputs (product_id, name, count, icon, sort_order) VALUES ($1,$2,$3,$4,$5)',
+      [id, data.inputs[i].name, data.inputs[i].count, data.inputs[i].icon, i])
+
+  for (let i = 0; i < data.outputs.length; i++)
+    await client.query('INSERT INTO product_outputs (product_id, name, count, icon, sort_order) VALUES ($1,$2,$3,$4,$5)',
+      [id, data.outputs[i].name, data.outputs[i].count, data.outputs[i].icon, i])
+
+  for (let i = 0; i < data.specs.length; i++)
+    await client.query('INSERT INTO product_specs (product_id, label, value, sort_order) VALUES ($1,$2,$3,$4)',
+      [id, data.specs[i].label, data.specs[i].value, i])
+}
+
+async function getDistinctIONames() {
+  const [inputs, outputs] = await Promise.all([
+    pool.query('SELECT DISTINCT name FROM product_inputs  ORDER BY name'),
+    pool.query('SELECT DISTINCT name FROM product_outputs ORDER BY name'),
+  ])
+  return {
+    inputNames:  inputs.rows.map(r => r.name),
+    outputNames: outputs.rows.map(r => r.name),
+  }
+}
+
+module.exports = { pool, getProductBySlug, getAllProducts, createProduct, updateProduct, getDistinctIONames }

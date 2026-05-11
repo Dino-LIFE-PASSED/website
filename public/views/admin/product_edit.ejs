@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= product ? 'Edit ' + product.name : 'Add Product' %> — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .admin-header a {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .admin-header a:hover { color: var(--text); }
+
+    .form-section {
+      margin-bottom: 2.5rem;
+    }
+
+    .form-section-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .form-group.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      font-family: var(--font);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 0;
+      padding: 0.55rem 0.75rem;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--text);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 80px;
+      line-height: 1.6;
+    }
+
+    /* Dynamic list rows */
+    .list-rows { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .list-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .list-row input { flex: 1; }
+    .list-row input.count-input { flex: 0 0 60px; }
+
+    .btn-remove {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-remove:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-add {
+      margin-top: 0.5rem;
+      background: none;
+      border: 1px dashed var(--border);
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding: 0.45rem 1rem;
+      cursor: pointer;
+      transition: border-color 0.15s, color 0.15s;
+      letter-spacing: 0.05em;
+    }
+    .btn-add:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-upload {
+      flex-shrink: 0;
+      padding: 0 0.75rem;
+      height: 34px;
+      background: none;
+      border: 1px solid var(--border);
+      font-family: var(--font);
+      font-size: 0.7rem;
+      color: var(--muted);
+      cursor: pointer;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-upload:hover { border-color: var(--text); color: var(--text); }
+
+    .img-thumb {
+      width: 34px;
+      height: 34px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .upload-spinner {
+      font-size: 0.65rem;
+      color: var(--muted);
+      flex-shrink: 0;
+      display: none;
+    }
+
+    .ac-wrap { position: relative; flex: 1; }
+    .ac-wrap input { width: 100%; }
+
+    .ac-dropdown {
+      position: absolute;
+      top: calc(100% + 1px);
+      left: 0;
+      right: 0;
+      z-index: 300;
+      background: var(--bg);
+      border: 1px solid var(--text);
+      max-height: 180px;
+      overflow-y: auto;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .ac-item {
+      padding: 0.45rem 0.75rem;
+      font-size: 0.78rem;
+      font-family: var(--font);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .ac-item:hover, .ac-item.active { background: var(--border); }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .flash {
+      padding: 0.75rem 1rem;
+      font-size: 0.78rem;
+      margin-bottom: 1.5rem;
+      border-left: 3px solid;
+    }
+    .flash.success { border-color: #2e7d32; color: #2e7d32; background: rgba(46,125,50,0.06); }
+    .flash.error   { border-color: var(--accent); color: var(--accent); background: rgba(224,32,28,0.06); }
+
+    .list-row-hint {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+    .list-row-hint span { flex: 1; }
+    .list-row-hint .count-hint { flex: 0 0 60px; }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1><%= product ? 'edit product' : 'add product' %></h1>
+      <a href="/products">← back to products</a>
+    </div>
+
+    <% if (flash) { %>
+    <div class="flash <%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <form method="POST" action="<%= product ? '/admin/product_edit/' + product.slug : '/admin/product_edit' %>">
+
+      <!-- Basic info -->
+      <div class="form-section">
+        <p class="form-section-label">basic info</p>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="name">name</label>
+            <input type="text" id="name" name="name" value="<%= product ? product.name : '' %>" required />
+          </div>
+          <div class="form-group">
+            <label for="slug">slug (url path)</label>
+            <input type="text" id="slug" name="slug" value="<%= product ? product.slug : '' %>" required />
+          </div>
+          <div class="form-group">
+            <label for="price">price ($)</label>
+            <input type="number" id="price" name="price" step="0.01" min="0" value="<%= product ? product.price : '' %>" required />
+          </div>
+          <div class="form-group">
+            <label for="badge">badge (optional)</label>
+            <input type="text" id="badge" name="badge" value="<%= product ? (product.badge || '') : '' %>" placeholder="e.g. featured, new" />
+          </div>
+          <div class="form-group full">
+            <label for="desc">description</label>
+            <textarea id="desc" name="desc" rows="4"><%= product ? product.desc : '' %></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div class="form-section">
+        <p class="form-section-label">images</p>
+        <div class="list-rows" id="images-list">
+          <% const imgs = (product && product.images) ? product.images : ['']; %>
+          <% imgs.forEach(function(img) { %>
+          <div class="list-row">
+            <% if (img) { %><img class="img-thumb" src="<%= img %>" /><% } else { %><img class="img-thumb" style="display:none" /><% } %>
+            <input type="hidden" name="images[]" value="<%= img %>" />
+            <span class="upload-spinner">uploading…</span>
+            <label class="btn-upload">
+              choose file
+              <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this)" />
+            </label>
+            <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+          </div>
+          <% }) %>
+        </div>
+        <button type="button" class="btn-add" onclick="addRow('images-list', imageRowTemplate)">+ add image</button>
+      </div>
+
+      <!-- Inputs -->
+      <div class="form-section">
+        <p class="form-section-label">inputs</p>
+        <div class="list-row-hint"><span>name</span><span class="count-hint">count</span><span>icon file</span><div style="width:28px"></div></div>
+        <div class="list-rows" id="inputs-list">
+          <% const ins = (product && product.inputs) ? product.inputs : []; %>
+          <% ins.forEach(function(io) { %>
+          <div class="list-row">
+            <div class="ac-wrap">
+              <input type="text" name="input_name[]" value="<%= io.name %>" placeholder="XLR Balanced" data-ac="input" autocomplete="off" />
+            </div>
+            <input type="number" name="input_count[]" value="<%= io.count %>" class="count-input" min="1" />
+            <input type="text"   name="input_icon[]"  value="<%= io.icon %>"  placeholder="icon.svg" />
+            <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+          </div>
+          <% }) %>
+        </div>
+        <button type="button" class="btn-add" onclick="addRow('inputs-list', ioRowTemplate('input'))">+ add input</button>
+      </div>
+
+      <!-- Outputs -->
+      <div class="form-section">
+        <p class="form-section-label">outputs</p>
+        <div class="list-row-hint"><span>name</span><span class="count-hint">count</span><span>icon file</span><div style="width:28px"></div></div>
+        <div class="list-rows" id="outputs-list">
+          <% const outs = (product && product.outputs) ? product.outputs : []; %>
+          <% outs.forEach(function(io) { %>
+          <div class="list-row">
+            <div class="ac-wrap">
+              <input type="text" name="output_name[]" value="<%= io.name %>" placeholder="Speaker Driver" data-ac="output" autocomplete="off" />
+            </div>
+            <input type="number" name="output_count[]" value="<%= io.count %>" class="count-input" min="1" />
+            <input type="text"   name="output_icon[]"  value="<%= io.icon %>"  placeholder="icon.svg" />
+            <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+          </div>
+          <% }) %>
+        </div>
+        <button type="button" class="btn-add" onclick="addRow('outputs-list', ioRowTemplate('output'))">+ add output</button>
+      </div>
+
+      <!-- Specs -->
+      <div class="form-section">
+        <p class="form-section-label">specifications</p>
+        <div class="list-row-hint"><span>label</span><span>value</span><div style="width:28px"></div></div>
+        <div class="list-rows" id="specs-list">
+          <% const sps = (product && product.specs) ? product.specs : []; %>
+          <% sps.forEach(function(s) { %>
+          <div class="list-row">
+            <input type="text" name="spec_label[]" value="<%= s.label %>" placeholder="Frequency Response" />
+            <input type="text" name="spec_value[]" value="<%= s.value %>" placeholder="20Hz – 20kHz" />
+            <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+          </div>
+          <% }) %>
+        </div>
+        <button type="button" class="btn-add" onclick="addRow('specs-list', specRowTemplate)">+ add spec</button>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">save product</button>
+        <% if (product) { %>
+        <a href="/products/<%= product.slug %>" class="btn-ghost">view product</a>
+        <% } %>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    /* Auto-generate slug from name */
+    const nameInput = document.getElementById('name')
+    const slugInput = document.getElementById('slug')
+    let slugEdited = slugInput.value !== ''
+    slugInput.addEventListener('input', () => { slugEdited = true })
+    nameInput.addEventListener('input', () => {
+      if (!slugEdited) {
+        slugInput.value = nameInput.value
+          .toLowerCase().trim()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '')
+      }
+    })
+
+    function removeRow(btn) {
+      btn.closest('.list-row').remove()
+    }
+
+    function addRow(listId, html) {
+      const list = document.getElementById(listId)
+      const div = document.createElement('div')
+      div.innerHTML = html
+      const row = div.firstElementChild
+      list.appendChild(row)
+      row.querySelectorAll('input[data-ac]').forEach(initAC)
+    }
+
+    const imageRowTemplate = `
+      <div class="list-row">
+        <img class="img-thumb" style="display:none" />
+        <input type="hidden" name="images[]" value="" />
+        <span class="upload-spinner">uploading…</span>
+        <label class="btn-upload">
+          choose file
+          <input type="file" accept="image/*" style="display:none" onchange="uploadImage(this)" />
+        </label>
+        <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+      </div>`
+
+    async function uploadImage(fileInput) {
+      const row     = fileInput.closest('.list-row')
+      const pathInput = row.querySelector('input[type="hidden"][name="images[]"]')
+      const thumb   = row.querySelector('.img-thumb')
+      const spinner = row.querySelector('.upload-spinner')
+
+      spinner.style.display = 'inline'
+      const form = new FormData()
+      form.append('file', fileInput.files[0])
+
+      try {
+        const res  = await fetch('/admin/upload', { method: 'POST', body: form })
+        const data = await res.json()
+        if (data.error) throw new Error(data.error)
+        pathInput.value   = data.path
+        thumb.src         = data.path
+        thumb.style.display = ''
+      } catch (err) {
+        alert('Upload failed: ' + err.message)
+      } finally {
+        spinner.style.display = 'none'
+      }
+    }
+
+    const specRowTemplate = `
+      <div class="list-row">
+        <input type="text" name="spec_label[]" placeholder="Label" />
+        <input type="text" name="spec_value[]" placeholder="Value" />
+        <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+      </div>`
+
+    function ioRowTemplate(type) {
+      return `
+        <div class="list-row">
+          <div class="ac-wrap">
+            <input type="text" name="${type}_name[]" placeholder="Name" data-ac="${type}" autocomplete="off" />
+          </div>
+          <input type="number" name="${type}_count[]" value="1" class="count-input" min="1" />
+          <input type="text"   name="${type}_icon[]"  placeholder="icon.svg" />
+          <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
+        </div>`
+    }
+
+    /* Custom autocomplete */
+    const AC_DATA = { input: [], output: [] }
+
+    fetch('/admin/api/io-names')
+      .then(r => r.json())
+      .then(data => {
+        AC_DATA.input  = data.inputNames  || []
+        AC_DATA.output = data.outputNames || []
+      })
+
+    function initAC(input) {
+      const type = input.dataset.ac
+      const suggestions = AC_DATA[type] || []
+      let dropdown = null
+
+      function open() {
+        close()
+        const q = input.value.toLowerCase()
+        const matches = suggestions.filter(s => s.toLowerCase().includes(q))
+        if (!matches.length) return
+
+        dropdown = document.createElement('div')
+        dropdown.className = 'ac-dropdown'
+        matches.forEach(s => {
+          const item = document.createElement('div')
+          item.className = 'ac-item'
+          item.textContent = s
+          item.addEventListener('mousedown', e => {
+            e.preventDefault()
+            input.value = s
+            close()
+          })
+          dropdown.appendChild(item)
+        })
+        input.parentElement.appendChild(dropdown)
+      }
+
+      function close() {
+        if (dropdown) { dropdown.remove(); dropdown = null }
+      }
+
+      input.addEventListener('focus', open)
+      input.addEventListener('input', open)
+      input.addEventListener('blur', () => setTimeout(close, 150))
+    }
+
+    document.querySelectorAll('input[data-ac]').forEach(initAC)
+  </script>
+
+</body>
+</html>

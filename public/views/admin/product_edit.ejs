@@ -392,13 +392,26 @@
         <button type="button" class="btn-remove" onclick="removeRow(this)">×</button>
       </div>`
 
+    let activeUploads = 0
+    const saveBtn = document.querySelector('button[type="submit"]')
+
+    function setUploading(delta) {
+      activeUploads += delta
+      if (saveBtn) {
+        saveBtn.disabled = activeUploads > 0
+        saveBtn.textContent = activeUploads > 0 ? 'uploading…' : 'save product'
+      }
+    }
+
     async function uploadImage(fileInput) {
-      const row     = fileInput.closest('.list-row')
+      const row       = fileInput.closest('.list-row')
       const pathInput = row.querySelector('input[type="hidden"][name="images[]"]')
-      const thumb   = row.querySelector('.img-thumb')
-      const spinner = row.querySelector('.upload-spinner')
+      const thumb     = row.querySelector('.img-thumb')
+      const spinner   = row.querySelector('.upload-spinner')
 
       spinner.style.display = 'inline'
+      setUploading(+1)
+
       const form = new FormData()
       form.append('file', fileInput.files[0])
 
@@ -406,13 +419,14 @@
         const res  = await fetch('/admin/upload', { method: 'POST', body: form })
         const data = await res.json()
         if (data.error) throw new Error(data.error)
-        pathInput.value   = data.path
-        thumb.src         = data.path
-        thumb.style.display = ''
+        pathInput.value     = data.path
+        thumb.src           = data.path
+        thumb.style.display = 'block'
       } catch (err) {
         alert('Upload failed: ' + err.message)
       } finally {
         spinner.style.display = 'none'
+        setUploading(-1)
       }
     }
 

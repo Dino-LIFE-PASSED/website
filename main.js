@@ -33,12 +33,14 @@ app.get("/api/logos", (req, res) => {
   res.json(files)
 })
 
-app.get("/", (req, res) => {
-  res.render("home")
+app.get("/", async (req, res) => {
+  const products = await db.getAllProducts()
+  res.render("home", { products })
 })
 
-app.get("/products", (req, res) => {
-  res.render("products")
+app.get("/products", async (req, res) => {
+  const products = await db.getAllProducts()
+  res.render("products", { products })
 })
 
 app.get("/products/:slug", async (req, res) => {
@@ -53,15 +55,15 @@ app.get("/products/:slug", async (req, res) => {
 })
 
 function parseProductForm(body) {
-  const images  = [].concat(body['images[]']       || []).filter(Boolean)
-  const inNames = [].concat(body['input_name[]']   || [])
-  const inCounts= [].concat(body['input_count[]']  || [])
-  const inIcons = [].concat(body['input_icon[]']   || [])
-  const outNames= [].concat(body['output_name[]']  || [])
-  const outCounts=[].concat(body['output_count[]'] || [])
-  const outIcons= [].concat(body['output_icon[]']  || [])
-  const spLabels= [].concat(body['spec_label[]']   || [])
-  const spValues= [].concat(body['spec_value[]']   || [])
+  const images  = [].concat(body.images       || []).filter(Boolean)
+  const inNames = [].concat(body.input_name   || [])
+  const inCounts= [].concat(body.input_count  || [])
+  const inIcons = [].concat(body.input_icon   || [])
+  const outNames= [].concat(body.output_name  || [])
+  const outCounts=[].concat(body.output_count || [])
+  const outIcons= [].concat(body.output_icon  || [])
+  const spLabels= [].concat(body.spec_label   || [])
+  const spValues= [].concat(body.spec_value   || [])
 
   return {
     slug:    body.slug?.trim(),
@@ -84,6 +86,20 @@ app.post("/admin/upload", upload.single("file"), (req, res) => {
 app.get("/admin/api/io-names", async (req, res) => {
   const data = await db.getDistinctIONames()
   res.json(data)
+})
+
+app.get("/admin/products", async (req, res) => {
+  const products = await db.getAllProducts()
+  res.render("admin/products", { products })
+})
+
+app.delete("/admin/products/:slug", async (req, res) => {
+  try {
+    await db.deleteProduct(req.params.slug)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
 })
 
 app.get("/admin/product_edit", (req, res) => {
@@ -120,6 +136,7 @@ app.post("/admin/product_edit", async (req, res) => {
 app.post("/admin/product_edit/:slug", async (req, res) => {
   try {
     const data = parseProductForm(req.body)
+    console.log('[save]', req.params.slug, 'images:', data.images)
     await db.updateProduct(req.params.slug, data)
     res.redirect(`/admin/product_edit/${data.slug}?saved=1`)
   } catch (err) {

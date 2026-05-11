@@ -48,51 +48,45 @@
     </div>
 
     <!-- Products -->
+    <% if (products.length) { %>
+    <% const mainProduct = products.find(p => p.badge === 'featured') || products[0] %>
+    <% const sideProducts = products.filter(p => p.slug !== mainProduct.slug).slice(0, 2) %>
     <div class="section-products">
       <p class="section-tag">new arrivals</p>
       <h2 class="section-title">what's new</h2>
       <div class="products-featured">
 
         <div class="product-main">
-          <div class="product-img-placeholder"></div>
+          <div class="product-img-placeholder" <% if (mainProduct.image) { %>style="background-image: url('<%= mainProduct.image %>'); background-size: cover; background-position: center;"<% } %>></div>
           <div class="product-info">
-            <span class="product-badge">featured</span>
-            <h3 class="product-name">PAG-X1 Monitor</h3>
-            <p class="product-desc">Reference-grade studio monitor engineered for flat response and zero coloration.</p>
+            <% if (mainProduct.badge) { %><span class="product-badge"><%= mainProduct.badge %></span><% } %>
+            <h3 class="product-name"><%= mainProduct.name %></h3>
+            <p class="product-desc"><%= mainProduct.description %></p>
             <div class="product-footer">
-              <span class="product-price">$299</span>
-              <a href="#" class="btn-primary">view product</a>
+              <span class="product-price">$<%= mainProduct.price %></span>
+              <a href="/products/<%= mainProduct.slug %>" class="btn-primary">view product</a>
             </div>
           </div>
         </div>
 
         <div class="products-side">
-
+          <% sideProducts.forEach(function(p) { %>
           <div class="product-side-card">
-            <div class="product-side-img"></div>
+            <div class="product-side-img" <% if (p.image) { %>style="background-image: url('<%= p.image %>'); background-size: cover; background-position: center;"<% } %>></div>
             <div class="product-info">
-              <h3 class="product-name">PAG-EQ2 Headphone Amp</h3>
+              <h3 class="product-name"><%= p.name %></h3>
               <div class="product-footer">
-                <span class="product-price">$499</span>
-                <a href="#" class="btn-ghost">view</a>
+                <span class="product-price">$<%= p.price %></span>
+                <a href="/products/<%= p.slug %>" class="btn-ghost">view</a>
               </div>
             </div>
           </div>
-
-          <div class="product-side-card">
-            <div class="product-side-img"></div>
-            <div class="product-info">
-              <h3 class="product-name">PAG-C3 Condenser Mic</h3>
-              <div class="product-footer">
-                <span class="product-price">$199</span>
-                <a href="#" class="btn-ghost">view</a>
-              </div>
-            </div>
-          </div>
-
+          <% }) %>
         </div>
+
       </div>
     </div>
+    <% } %>
 
   </main>
 

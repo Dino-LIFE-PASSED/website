@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Products — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .admin-header a {
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .admin-header a:hover { color: var(--text); }
+
+    /* Stats */
+    .stats-row {
+      display: flex;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .stat-box {
+      flex: 1;
+      padding: 1.25rem 1.5rem;
+      background: var(--bg);
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.35rem;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .stat-box.warn .stat-value { color: var(--accent); }
+
+    /* Toolbar */
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+      flex: 1;
+      font-family: var(--font);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .search-input:focus { border-color: var(--text); }
+    .search-input::placeholder { color: var(--muted); }
+
+    /* Table */
+    .product-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .product-table th {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+    }
+
+    .product-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      font-size: 0.82rem;
+    }
+
+    .product-table tr:last-child td { border-bottom: none; }
+
+    .product-table tbody tr {
+      transition: background 0.1s;
+    }
+    .product-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+    .col-img { width: 52px; }
+    .col-name { }
+    .col-badge { width: 100px; }
+    .col-price { width: 90px; }
+    .col-actions { width: 100px; text-align: right; }
+
+    .row-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .row-img-placeholder {
+      width: 40px;
+      height: 40px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+    }
+
+    .badge-pill {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .badge-pill.featured {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .row-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .btn-edit, .btn-delete {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+      letter-spacing: 0.04em;
+    }
+    .btn-edit:hover { border-color: var(--text); color: var(--text); }
+    .btn-delete:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .no-results { display: none; }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1>products</h1>
+      <a href="/">← home</a>
+    </div>
+
+    <%
+      const total    = products.length
+      const featured = products.filter(p => p.badge === 'featured').length
+      const noImage  = products.filter(p => !p.image).length
+    %>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-value"><%= total %></div>
+        <div class="stat-label">total products</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value"><%= featured %></div>
+        <div class="stat-label">featured</div>
+      </div>
+      <div class="stat-box <%= noImage > 0 ? 'warn' : '' %>">
+        <div class="stat-value"><%= noImage %></div>
+        <div class="stat-label">no image</div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <input class="search-input" type="text" id="search" placeholder="search products…" oninput="filterTable(this.value)" />
+      <a href="/admin/product_edit" class="btn-primary">+ add product</a>
+    </div>
+
+    <!-- Table -->
+    <% if (products.length) { %>
+    <table class="product-table" id="product-table">
+      <thead>
+        <tr>
+          <th class="col-img"></th>
+          <th class="col-name">name</th>
+          <th class="col-badge">badge</th>
+          <th class="col-price">price</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody id="table-body">
+        <% products.forEach(function(p) { %>
+        <tr data-name="<%= p.name.toLowerCase() %>" data-badge="<%= (p.badge || '').toLowerCase() %>">
+          <td class="col-img">
+            <% if (p.image) { %>
+            <img class="row-img" src="<%= p.image %>" alt="" />
+            <% } else { %>
+            <div class="row-img-placeholder">no img</div>
+            <% } %>
+          </td>
+          <td class="col-name"><%= p.name %></td>
+          <td class="col-badge">
+            <% if (p.badge) { %>
+            <span class="badge-pill <%= p.badge === 'featured' ? 'featured' : '' %>"><%= p.badge %></span>
+            <% } %>
+          </td>
+          <td class="col-price">$<%= p.price %></td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <a href="/admin/product_edit/<%= p.slug %>" class="btn-edit">edit</a>
+              <button class="btn-delete" onclick="deleteProduct('<%= p.slug %>', this)">delete</button>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <p class="no-results" id="no-results">no products match</p>
+    <% } else { %>
+    <div class="empty-state">no products yet — <a href="/admin/product_edit">add one</a></div>
+    <% } %>
+
+  </div>
+
+  <script>
+    function filterTable(q) {
+      const rows = document.querySelectorAll('#table-body tr')
+      const term = q.toLowerCase().trim()
+      let visible = 0
+      rows.forEach(row => {
+        const match = !term || row.dataset.name.includes(term) || row.dataset.badge.includes(term)
+        row.style.display = match ? '' : 'none'
+        if (match) visible++
+      })
+      document.getElementById('no-results').style.display = visible === 0 && term ? 'block' : 'none'
+    }
+
+    async function deleteProduct(slug, btn) {
+      if (!confirm(`Delete "${slug}"?`)) return
+      btn.disabled = true
+      btn.textContent = '…'
+      try {
+        const res = await fetch(`/admin/products/${slug}`, { method: 'DELETE' })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        btn.closest('tr').remove()
+      } catch (err) {
+        alert('Delete failed: ' + err.message)
+        btn.disabled = false
+        btn.textContent = 'delete'
+      }
+    }
+  </script>
+
+</body>
+</html>

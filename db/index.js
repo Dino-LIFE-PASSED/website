@@ -32,7 +32,12 @@ async function getProductBySlug(slug) {
 }
 
 async function getAllProducts() {
-  const { rows } = await pool.query('SELECT slug, name, badge, price, description FROM products ORDER BY id')
+  const { rows } = await pool.query(`
+    SELECT p.slug, p.name, p.badge, p.price, p.description,
+      (SELECT path FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
+    FROM products p
+    ORDER BY p.id
+  `)
   return rows
 }
 
@@ -108,4 +113,9 @@ async function getDistinctIONames() {
   }
 }
 
-module.exports = { pool, getProductBySlug, getAllProducts, createProduct, updateProduct, getDistinctIONames }
+async function deleteProduct(slug) {
+  const { rowCount } = await pool.query('DELETE FROM products WHERE slug = $1', [slug])
+  if (!rowCount) throw new Error('Product not found')
+}
+
+module.exports = { pool, getProductBySlug, getAllProducts, createProduct, updateProduct, deleteProduct, getDistinctIONames }

@@ -88,6 +88,10 @@ app.get("/admin/api/io-names", async (req, res) => {
   res.json(data)
 })
 
+app.get("/admin", (req, res) => {
+  res.render("admin/index")
+})
+
 app.get("/admin/products", async (req, res) => {
   const products = await db.getAllProducts()
   res.render("admin/products", { products })

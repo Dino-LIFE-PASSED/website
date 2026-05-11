@@ -9,6 +9,7 @@
 <body>
 
   <%- include('partials/navbar') %>
+  <%- include('partials/partners') %>
   <%- include('partials/wave') %>
 
   <div class="pd-page">
@@ -16,28 +17,61 @@
     <!-- Row 1: Gallery -->
     <div class="pd-gallery">
       <div class="pd-thumbs">
-        <% product.images.forEach(function(img, i) { %>
-        <div class="pd-thumb <%= i === 0 ? 'active' : '' %>" data-src="<%= img %>" data-index="<%= i %>">
-          <img src="<%= img %>" alt="<%= product.name %> view <%= i + 1 %>" loading="lazy" onerror="this.style.display='none'" />
+        <div class="pd-thumbs-track" id="pd-thumbs-track">
+          <% for (let _copy = 0; _copy < 4; _copy++) { %>
+          <% product.images.forEach(function(img, i) { %>
+          <div class="pd-thumb <%= i === 0 && _copy === 0 ? 'active' : '' %>" data-src="<%= img %>" data-index="<%= i %>">
+            <img src="<%= img %>" alt="<%= product.name %> view <%= i + 1 %>" loading="<%= _copy === 0 ? 'eager' : 'lazy' %>" onerror="this.style.display='none'" />
+          </div>
+          <% }) %>
+          <% } %>
         </div>
-        <% }) %>
       </div>
       <div class="pd-main-img" id="pd-main-img">
-        <img src="<%= product.images[0] %>" alt="<%= product.name %>" id="pd-main-img-el" onerror="this.style.display='none'" />
+        <img src="<%= product.images[0] %>" alt="<%= product.name %>" id="pd-main-img-el" />
       </div>
     </div>
 
     <script>
-      const thumbs = document.querySelectorAll('.pd-thumb')
-      const mainImg = document.getElementById('pd-main-img-el')
-      thumbs.forEach(thumb => {
-        thumb.addEventListener('click', () => {
-          thumbs.forEach(t => t.classList.remove('active'))
-          thumb.classList.add('active')
-          mainImg.src = thumb.dataset.src
-          mainImg.style.display = ''
-        })
+    ;(function () {
+      const strip    = document.querySelector('.pd-thumbs')
+      const thumbTrack = document.getElementById('pd-thumbs-track')
+      const mainImg  = document.getElementById('pd-main-img-el')
+      const imageCount = <%= product.images.length %>
+
+      /* Click: update main image (works on all 4 copies) */
+      thumbTrack.addEventListener('click', e => {
+        const thumb = e.target.closest('.pd-thumb')
+        if (!thumb || !thumb.dataset.src) return
+        const idx = thumb.dataset.index
+        thumbTrack.querySelectorAll('.pd-thumb').forEach(t =>
+          t.classList.toggle('active', t.dataset.index === idx)
+        )
+        mainImg.src = thumb.dataset.src
+        mainImg.style.display = 'block'
       })
+
+      /* Pause on hover / touch */
+      strip.addEventListener('mouseenter', () => thumbTrack.style.animationPlayState = 'paused')
+      strip.addEventListener('mouseleave', () => thumbTrack.style.animationPlayState = 'running')
+      strip.addEventListener('touchstart', () => thumbTrack.style.animationPlayState = 'paused', { passive: true })
+      strip.addEventListener('touchend',   () => thumbTrack.style.animationPlayState = 'running', { passive: true })
+
+      /* Set speed then start */
+      function initScroll() {
+        if (!imageCount) return
+        const thumbEl = thumbTrack.querySelector('.pd-thumb')
+        if (!thumbEl) return
+        const thumbW = thumbEl.getBoundingClientRect().width
+        if (!thumbW) return
+        const origWidth = imageCount * (thumbW + 1)
+        thumbTrack.style.setProperty('--pd-dur', `${(origWidth / 80).toFixed(1)}s`)
+        thumbTrack.classList.add('scrolling')
+      }
+
+      window.addEventListener('load', initScroll)
+      window.addEventListener('resize', () => { thumbTrack.classList.remove('scrolling'); initScroll() })
+    })()
     </script>
 
     <!-- Row 2: IO Diagram -->

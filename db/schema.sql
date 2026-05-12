@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS products (
   name    TEXT NOT NULL,
   badge   TEXT,
   price   NUMERIC(10, 2) NOT NULL,
-  description TEXT
+  description TEXT,
+  stock   INT NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS product_images (
@@ -38,4 +39,12 @@ CREATE TABLE IF NOT EXISTS product_specs (
   label       TEXT NOT NULL,
   value       TEXT NOT NULL,
   sort_order  INT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS dealers (
+  id               SERIAL PRIMARY KEY,
+  code             TEXT UNIQUE NOT NULL,
+  name             TEXT NOT NULL,
+  password_hash    TEXT NOT NULL,
+  discount_percent NUMERIC(5,2) NOT NULL DEFAULT 20
 );

@@ -4,7 +4,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
 async function getProductBySlug(slug) {
   const { rows: products } = await pool.query(
-    'SELECT id, slug, name, badge, price, description FROM products WHERE slug = $1',
+    'SELECT id, slug, name, badge, price, description, stock FROM products WHERE slug = $1',
     [slug]
   )
   if (!products.length) return null
@@ -24,6 +24,7 @@ async function getProductBySlug(slug) {
     badge:   product.badge,
     price:   product.price,
     desc:    product.description,
+    stock:   product.stock,
     images:  images.rows.map(r => r.path),
     inputs:  inputs.rows,
     outputs: outputs.rows,
@@ -33,7 +34,7 @@ async function getProductBySlug(slug) {
 
 async function getAllProducts() {
   const { rows } = await pool.query(`
-    SELECT p.slug, p.name, p.badge, p.price, p.description,
+    SELECT p.slug, p.name, p.badge, p.price, p.description, p.stock,
       (SELECT path FROM product_images WHERE product_id = p.id ORDER BY sort_order LIMIT 1) AS image
     FROM products p
     ORDER BY p.id
@@ -46,8 +47,8 @@ async function createProduct(data) {
   try {
     await client.query('BEGIN')
     const { rows } = await client.query(
-      'INSERT INTO products (slug, name, badge, price, description) VALUES ($1,$2,$3,$4,$5) RETURNING id',
-      [data.slug, data.name, data.badge || null, data.price, data.desc]
+      'INSERT INTO products (slug, name, badge, price, description, stock) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id',
+      [data.slug, data.name, data.badge || null, data.price, data.desc, data.stock ?? 0]
     )
     const id = rows[0].id
     await _insertRelated(client, id, data)
@@ -65,8 +66,8 @@ async function updateProduct(slug, data) {
   try {
     await client.query('BEGIN')
     const { rows } = await client.query(
-      'UPDATE products SET name=$1, badge=$2, price=$3, description=$4, slug=$5 WHERE slug=$6 RETURNING id',
-      [data.name, data.badge || null, data.price, data.desc, data.slug, slug]
+      'UPDATE products SET name=$1, badge=$2, price=$3, description=$4, slug=$5, stock=$6 WHERE slug=$7 RETURNING id',
+      [data.name, data.badge || null, data.price, data.desc, data.slug, data.stock ?? 0, slug]
     )
     if (!rows.length) throw new Error('Product not found')
     const id = rows[0].id
@@ -118,4 +119,43 @@ async function deleteProduct(slug) {
   if (!rowCount) throw new Error('Product not found')
 }
 
-module.exports = { pool, getProductBySlug, getAllProducts, createProduct, updateProduct, deleteProduct, getDistinctIONames }
+async function getDealerByCode(code) {
+  const { rows } = await pool.query('SELECT * FROM dealers WHERE code = $1', [code])
+  return rows[0] || null
+}
+
+async function getAllDealers() {
+  const { rows } = await pool.query('SELECT id, code, name, discount_percent FROM dealers ORDER BY id')
+  return rows
+}
+
+async function createDealer({ code, name, passwordHash, discount }) {
+  const { rows } = await pool.query(
+    'INSERT INTO dealers (code, name, password_hash, discount_percent) VALUES ($1,$2,$3,$4) RETURNING id',
+    [code, name, passwordHash, discount]
+  )
+  return rows[0]
+}
+
+async function updateDealer(id, { name, discount }) {
+  const { rowCount } = await pool.query(
+    'UPDATE dealers SET name=$1, discount_percent=$2 WHERE id=$3',
+    [name, discount, id]
+  )
+  if (!rowCount) throw new Error('Dealer not found')
+}
+
+async function updateDealerPassword(id, passwordHash) {
+  const { rowCount } = await pool.query('UPDATE dealers SET password_hash=$1 WHERE id=$2', [passwordHash, id])
+  if (!rowCount) throw new Error('Dealer not found')
+}
+
+async function deleteDealer(id) {
+  const { rowCount } = await pool.query('DELETE FROM dealers WHERE id=$1', [id])
+  if (!rowCount) throw new Error('Dealer not found')
+}
+
+module.exports = {
+  pool, getProductBySlug, getAllProducts, createProduct, updateProduct, deleteProduct, getDistinctIONames,
+  getDealerByCode, getAllDealers, createDealer, updateDealer, updateDealerPassword, deleteDealer,
+}

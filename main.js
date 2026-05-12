@@ -3,7 +3,11 @@ const express = require("express")
 const path = require("path")
 const fs = require("fs")
 const multer = require("multer")
+const session = require("express-session")
+const bcrypt = require("bcrypt")
 const db = require("./db")
+const app = express()
+const PORT = process.env.PORT || 3000
 
 const PARTNERS_FILE = path.join(__dirname, "data/partners.json")
 function readPartners() {
@@ -41,15 +45,25 @@ const logoUpload = multer({
   }
 })
 
-const app = express()
-const PORT = process.env.PORT || 3000
 
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "public/views"))
 
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'pag-dealer-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 8 * 60 * 60 * 1000 }
+}))
+
 app.use(express.static(path.join(__dirname, "public")))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+
+function requireDealer(req, res, next) {
+  if (req.session.dealerId) return next()
+  res.redirect('/dealer/login')
+}
 
 app.get("/api/logos", (req, res) => {
   const dir = path.join(__dirname, "public/svg")
@@ -95,6 +109,7 @@ function parseProductForm(body) {
     name:    body.name?.trim(),
     badge:   body.badge?.trim() || null,
     price:   parseFloat(body.price),
+    stock:   parseInt(body.stock) || 0,
     desc:    body.desc?.trim(),
     images,
     inputs:  inNames.map((n, i) => ({ name: n, count: parseInt(inCounts[i]) || 1, icon: inIcons[i] })).filter(r => r.name),
@@ -207,6 +222,126 @@ app.post("/admin/product_edit/:slug", async (req, res) => {
     const product = await db.getProductBySlug(req.params.slug).catch(() => null)
     if (product) product.slug = req.params.slug
     res.render("admin/product_edit", { product, flash: { type: 'error', message: err.message } })
+  }
+})
+
+/* ── Dealer portal ── */
+app.get("/dealer", (req, res) => {
+  res.redirect('/dealer/login')
+})
+
+app.get("/dealer/login", (req, res) => {
+  if (req.session.dealerId) return res.redirect('/dealer/prices')
+  res.render("dealer/login", { error: null })
+})
+
+app.post("/dealer/login", async (req, res) => {
+  const code = (req.body.code || '').trim().toUpperCase()
+  const password = req.body.password || ''
+  try {
+    const dealer = await db.getDealerByCode(code)
+    if (!dealer || !(await bcrypt.compare(password, dealer.password_hash))) {
+      return res.render("dealer/login", { error: 'invalid dealer code or password' })
+    }
+    req.session.dealerId = dealer.id
+    req.session.dealerCode = dealer.code
+    req.session.dealerName = dealer.name
+    req.session.dealerDiscount = parseFloat(dealer.discount_percent)
+    res.redirect('/dealer/prices')
+  } catch (err) {
+    console.error(err)
+    res.render("dealer/login", { error: 'server error — please try again' })
+  }
+})
+
+app.get("/dealer/logout", (req, res) => {
+  req.session.destroy()
+  res.redirect('/dealer/login')
+})
+
+app.get("/dealer/prices", requireDealer, async (req, res) => {
+  const products = await db.getAllProducts()
+  const discount = req.session.dealerDiscount
+  res.render("dealer/prices", {
+    products,
+    discount,
+    dealerName: req.session.dealerName,
+    dealerCode: req.session.dealerCode,
+  })
+})
+
+app.get("/dealer/prices/export.csv", requireDealer, async (req, res) => {
+  const products = await db.getAllProducts()
+  const discount = req.session.dealerDiscount
+  const rows = [
+    ['Product', 'List Price (THB)', `Discount (${discount}%)`, 'Dealer Price (THB)'],
+    ...products.map(p => {
+      const dealerPrice = (p.price * (1 - discount / 100)).toFixed(2)
+      return [p.name, Number(p.price).toFixed(2), `-${discount}%`, dealerPrice]
+    })
+  ]
+  const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n')
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', `attachment; filename="PAG-dealer-${req.session.dealerCode}-prices.csv"`)
+  res.send('﻿' + csv)
+})
+
+/* ── Admin: dealers ── */
+app.get("/admin/dealers", async (req, res) => {
+  const dealers = await db.getAllDealers()
+  const flash = req.query.created ? { type: 'success', message: 'Dealer created.' } : null
+  res.render("admin/dealers", { dealers, flash })
+})
+
+app.post("/admin/dealers", async (req, res) => {
+  try {
+    const code = (req.body.code || '').trim().toUpperCase()
+    const name = (req.body.name || '').trim()
+    const password = (req.body.password || '').trim()
+    const discount = parseFloat(req.body.discount)
+    if (!code || !name || !password) throw new Error('all fields required')
+    if (isNaN(discount) || discount < 0 || discount > 100) throw new Error('discount must be 0–100')
+    if (password.length < 4) throw new Error('password must be at least 4 characters')
+    const passwordHash = await bcrypt.hash(password, 10)
+    await db.createDealer({ code, name, passwordHash, discount })
+    res.redirect('/admin/dealers?created=1')
+  } catch (err) {
+    const dealers = await db.getAllDealers()
+    res.render("admin/dealers", { dealers, flash: { type: 'error', message: err.message } })
+  }
+})
+
+app.post("/admin/dealers/:id/update", async (req, res) => {
+  try {
+    const name = (req.body.name || '').trim()
+    const discount = parseFloat(req.body.discount)
+    if (!name) throw new Error('name required')
+    if (isNaN(discount) || discount < 0 || discount > 100) throw new Error('discount must be 0–100')
+    await db.updateDealer(req.params.id, { name, discount })
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message })
+  }
+})
+
+app.post("/admin/dealers/:id/password", async (req, res) => {
+  try {
+    const password = (req.body.password || '').trim()
+    if (password.length < 4) throw new Error('password must be at least 4 characters')
+    const passwordHash = await bcrypt.hash(password, 10)
+    await db.updateDealerPassword(req.params.id, passwordHash)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message })
+  }
+})
+
+app.delete("/admin/dealers/:id", async (req, res) => {
+  try {
+    await db.deleteDealer(req.params.id)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(400).json({ ok: false, error: err.message })
   }
 })
 

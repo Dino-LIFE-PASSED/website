@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dealer Prices — PAG</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .dealer-page {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .dealer-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .dealer-header-left { display: flex; align-items: baseline; gap: 1.5rem; }
+    .dealer-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+
+    .dealer-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.15rem 0.5rem;
+    }
+
+    .dealer-header-right {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .btn-export {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-export:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-logout {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
+    .discount-banner {
+      background: rgba(0,0,0,0.03);
+      border: 1px solid var(--border);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: baseline;
+      gap: 1rem;
+    }
+
+    .discount-value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .discount-desc {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .search-row {
+      margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+      width: 100%;
+      font-family: var(--font);
+      font-size: 0.85rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
+      box-sizing: border-box;
+    }
+    .search-input:focus { border-color: var(--text); }
+    .search-input::placeholder { color: var(--muted); }
+
+    /* Card grid */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .price-card {
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      transition: background 0.15s;
+    }
+
+    .price-card:hover { background: rgba(0,0,0,0.015); }
+    .price-card.hidden { display: none; }
+
+    .card-img-wrap {
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      background: rgba(0,0,0,0.04);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .card-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-img-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--border);
+      font-size: 2rem;
+    }
+
+    .card-body {
+      padding: 1rem 1.1rem 1.1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card-name {
+      font-size: 0.88rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      line-height: 1.3;
+    }
+
+    .card-badge {
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.35rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 0.1rem;
+    }
+
+    .card-pricing {
+      margin-top: auto;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .card-pricing-left { display: flex; flex-direction: column; gap: 0.15rem; }
+
+    .price-list-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .price-list {
+      font-size: 0.78rem;
+      color: var(--muted);
+      text-decoration: line-through;
+    }
+
+    .card-pricing-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.15rem; }
+
+    .price-dealer-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .price-dealer {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .price-disc-tag {
+      font-size: 0.62rem;
+      letter-spacing: 0.06em;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .stock-tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border: 1px solid;
+      margin-top: 0.5rem;
+      align-self: flex-start;
+    }
+    .stock-tag.in-stock   { color: #2e7d32; border-color: #2e7d32; }
+    .stock-tag.low-stock  { color: #b45309; border-color: #b45309; }
+    .stock-tag.out-stock  { color: var(--accent); border-color: var(--accent); }
+
+    .no-results {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+      display: none;
+      grid-column: 1 / -1;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dealer-page">
+
+    <div class="dealer-header">
+      <div class="dealer-header-left">
+        <h1>dealer prices</h1>
+        <span class="dealer-tag"><%= dealerCode %> · <%= dealerName %></span>
+      </div>
+      <div class="dealer-header-right">
+        <a href="/dealer/prices/export.csv" class="btn-export">export CSV</a>
+        <a href="/dealer/logout" class="btn-logout">sign out</a>
+      </div>
+    </div>
+
+    <div class="discount-banner">
+      <div class="discount-value">-<%= discount %>%</div>
+      <div class="discount-desc">your dealer discount on all products</div>
+    </div>
+
+    <div class="search-row">
+      <input class="search-input" type="search" id="search" placeholder="search products…" />
+    </div>
+
+    <div class="card-grid" id="card-grid">
+      <% products.forEach(function(p) {
+        const dealerPrice = (p.price * (1 - discount / 100)).toFixed(2)
+        const stock = parseInt(p.stock) || 0
+        const stockClass = stock === 0 ? 'out-stock' : stock <= 5 ? 'low-stock' : 'in-stock'
+        const stockLabel = stock === 0 ? 'out of stock' : stock <= 5 ? `low stock · ${stock} left` : `in stock · ${stock}`
+      %>
+      <div class="price-card" data-name="<%= p.name.toLowerCase() %>">
+        <div class="card-img-wrap">
+          <% if (p.image) { %>
+          <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy" />
+          <% } else { %>
+          <div class="card-img-placeholder">&#9634;</div>
+          <% } %>
+        </div>
+        <div class="card-body">
+          <div class="card-top">
+            <span class="card-name"><%= p.name %></span>
+            <% if (p.badge) { %><span class="card-badge"><%= p.badge %></span><% } %>
+          </div>
+          <span class="stock-tag <%= stockClass %>"><%= stockLabel %></span>
+          <div class="card-pricing">
+            <div class="card-pricing-left">
+              <span class="price-list-label">list</span>
+              <span class="price-list">฿<%= Number(p.price).toLocaleString('th-TH', {minimumFractionDigits:2}) %></span>
+            </div>
+            <div class="card-pricing-right">
+              <span class="price-disc-tag">-<%= discount %>%</span>
+              <span class="price-dealer">฿<%= Number(dealerPrice).toLocaleString('th-TH', {minimumFractionDigits:2}) %></span>
+              <span class="price-dealer-label">your price</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <% }) %>
+      <p class="no-results" id="no-results">no products match your search</p>
+    </div>
+
+  </div>
+
+  <script>
+  ;(function () {
+    const searchInput = document.getElementById('search')
+    const cards = document.querySelectorAll('.price-card')
+    const noResults = document.getElementById('no-results')
+
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase().trim()
+      let visible = 0
+      cards.forEach(card => {
+        const match = !q || card.dataset.name.includes(q)
+        card.classList.toggle('hidden', !match)
+        if (match) visible++
+      })
+      noResults.style.display = visible === 0 ? 'block' : 'none'
+    })
+  })()
+  </script>
+
+</body>
+</html>

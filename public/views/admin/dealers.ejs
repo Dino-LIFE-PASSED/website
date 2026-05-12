@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dealers — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .admin-header a { font-size: 0.72rem; color: var(--muted); text-decoration: none; }
+    .admin-header a:hover { color: var(--text); }
+
+    .flash {
+      font-size: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      margin-bottom: 1.5rem;
+    }
+    .flash.success { border-color: #2e7d32; color: #2e7d32; }
+    .flash.error   { border-color: var(--accent); color: var(--accent); }
+
+    /* New dealer form */
+    .new-dealer-section {
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .section-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.02);
+    }
+
+    .new-dealer-form {
+      padding: 1.25rem;
+      display: grid;
+      grid-template-columns: 120px 1fr 1fr 90px auto;
+      gap: 0.75rem;
+      align-items: end;
+    }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.3rem; }
+
+    .form-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-input {
+      font-family: var(--font);
+      font-size: 0.82rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.6rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .form-input:focus { border-color: var(--text); }
+
+    .btn-create {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      border: 1px solid var(--text);
+      background: var(--text);
+      color: var(--bg);
+      white-space: nowrap;
+      transition: opacity 0.15s;
+      align-self: end;
+    }
+    .btn-create:hover { opacity: 0.8; }
+
+    /* Dealers table */
+    .dealer-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .dealer-table th {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+    }
+
+    .dealer-table td {
+      padding: 0.75rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    .dealer-table tr:last-child td { border-bottom: none; }
+    .dealer-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+    .col-code  { width: 110px; }
+    .col-name  { }
+    .col-disc  { width: 110px; }
+    .col-pw    { width: 200px; }
+    .col-del   { width: 80px; text-align: right; }
+
+    .dealer-code {
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+
+    .dealer-name { font-size: 0.82rem; }
+
+    .inline-row { display: flex; gap: 0.4rem; align-items: center; }
+
+    .inline-input {
+      font-family: var(--font);
+      font-size: 0.78rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.35rem 0.5rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 60px;
+    }
+    .inline-input:focus { border-color: var(--text); }
+
+    .inline-input.pw-input { width: 110px; }
+
+    .btn-inline {
+      font-family: var(--font);
+      font-size: 0.65rem;
+      padding: 0.35rem 0.6rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-inline:hover { border-color: var(--text); color: var(--text); }
+    .btn-inline.saved { border-color: #2e7d32; color: #2e7d32; }
+
+    .btn-delete {
+      font-family: var(--font);
+      font-size: 0.65rem;
+      padding: 0.35rem 0.6rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-delete:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1>dealers</h1>
+      <a href="/admin">← admin</a>
+    </div>
+
+    <% if (flash) { %>
+    <div class="flash <%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <!-- New dealer -->
+    <div class="new-dealer-section">
+      <p class="section-label">add dealer</p>
+      <form class="new-dealer-form" method="POST" action="/admin/dealers">
+        <div class="form-group">
+          <label class="form-label" for="code">code</label>
+          <input class="form-input" type="text" id="code" name="code" placeholder="PAG-001" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="name">name</label>
+          <input class="form-input" type="text" id="name" name="name" placeholder="dealer company name" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="password">password</label>
+          <input class="form-input" type="text" id="password" name="password" placeholder="min 4 chars" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="discount">discount %</label>
+          <input class="form-input" type="number" id="discount" name="discount"
+            min="0" max="100" step="0.5" value="20" required />
+        </div>
+        <button class="btn-create" type="submit">add</button>
+      </form>
+    </div>
+
+    <!-- Dealer table -->
+    <% if (dealers.length) { %>
+    <table class="dealer-table">
+      <thead>
+        <tr>
+          <th class="col-code">code</th>
+          <th class="col-name">name</th>
+          <th class="col-disc">discount %</th>
+          <th class="col-pw">reset password</th>
+          <th class="col-del"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% dealers.forEach(function(d) { %>
+        <tr id="drow-<%= d.id %>">
+          <td class="col-code"><span class="dealer-code"><%= d.code %></span></td>
+          <td class="col-name"><span class="dealer-name"><%= d.name %></span></td>
+          <td class="col-disc">
+            <div class="inline-row">
+              <input class="inline-input disc-input" type="number" min="0" max="100" step="0.5"
+                value="<%= d.discount_percent %>" data-id="<%= d.id %>" data-name="<%= d.name %>" />
+              <button class="btn-inline" onclick="saveDiscount(<%= d.id %>, this)">save</button>
+            </div>
+          </td>
+          <td class="col-pw">
+            <div class="inline-row">
+              <input class="inline-input pw-input" type="text" placeholder="new password"
+                data-id="<%= d.id %>" />
+              <button class="btn-inline" onclick="savePassword(<%= d.id %>, this)">set</button>
+            </div>
+          </td>
+          <td class="col-del" style="text-align:right">
+            <button class="btn-delete" onclick="deleteDealer(<%= d.id %>, '<%= d.code %>', this)">delete</button>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state">no dealers yet — add one above</div>
+    <% } %>
+
+  </div>
+
+  <script>
+  ;(function () {
+    window.saveDiscount = async function(id, btn) {
+      const row = document.getElementById(`drow-${id}`)
+      const discInput = row.querySelector('.disc-input')
+      const nameVal = discInput.dataset.name
+      btn.disabled = true; btn.textContent = '…'
+      try {
+        const res = await fetch(`/admin/dealers/${id}/update`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `name=${encodeURIComponent(nameVal)}&discount=${encodeURIComponent(discInput.value)}`
+        })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        btn.textContent = 'saved'; btn.classList.add('saved')
+        setTimeout(() => { btn.textContent = 'save'; btn.classList.remove('saved') }, 2000)
+      } catch (err) {
+        alert('Save failed: ' + err.message)
+        btn.textContent = 'save'
+      }
+      btn.disabled = false
+    }
+
+    window.savePassword = async function(id, btn) {
+      const row = document.getElementById(`drow-${id}`)
+      const pwInput = row.querySelector('.pw-input')
+      const pw = pwInput.value.trim()
+      if (!pw) return
+      btn.disabled = true; btn.textContent = '…'
+      try {
+        const res = await fetch(`/admin/dealers/${id}/password`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: `password=${encodeURIComponent(pw)}`
+        })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        pwInput.value = ''
+        btn.textContent = 'set'; btn.classList.add('saved')
+        setTimeout(() => { btn.textContent = 'set'; btn.classList.remove('saved') }, 2000)
+      } catch (err) {
+        alert('Failed: ' + err.message)
+        btn.textContent = 'set'
+      }
+      btn.disabled = false
+    }
+
+    window.deleteDealer = async function(id, code, btn) {
+      if (!confirm(`Delete dealer "${code}"? This cannot be undone.`)) return
+      btn.disabled = true; btn.textContent = '…'
+      try {
+        const res = await fetch(`/admin/dealers/${id}`, { method: 'DELETE' })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        document.getElementById(`drow-${id}`)?.remove()
+      } catch (err) {
+        alert('Delete failed: ' + err.message)
+        btn.disabled = false; btn.textContent = 'delete'
+      }
+    }
+  })()
+  </script>
+
+</body>
+</html>

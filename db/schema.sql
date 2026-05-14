@@ -48,3 +48,19 @@ CREATE TABLE IF NOT EXISTS dealers (
   password_hash    TEXT NOT NULL,
   discount_percent NUMERIC(5,2) NOT NULL DEFAULT 20
 );
+
+CREATE TABLE IF NOT EXISTS events (
+  id           SERIAL PRIMARY KEY,
+  name         TEXT NOT NULL,
+  description  TEXT,
+  price        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  event_date   TIMESTAMPTZ NOT NULL,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS event_images (
+  id         SERIAL PRIMARY KEY,
+  event_id   INT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+  path       TEXT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 0
+);

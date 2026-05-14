@@ -72,8 +72,8 @@ app.get("/api/logos", (req, res) => {
 })
 
 app.get("/", async (req, res) => {
-  const products = await db.getAllProducts()
-  res.render("home", { products })
+  const [products, events] = await Promise.all([db.getAllProducts(), db.getUpcomingEvents()])
+  res.render("home", { products, events })
 })
 
 app.get("/products", async (req, res) => {
@@ -316,6 +316,74 @@ app.post("/admin/product_edit/:slug", async (req, res) => {
     res.render("admin/product_edit", { product, flash: { type: 'error', message: err.message } })
   }
 })
+
+/* ── Admin: events ── */
+app.get("/admin/events", async (req, res) => {
+  const events = await db.getAllEvents()
+  const flash = req.query.created ? { type: 'success', message: 'Event created.' } : null
+  res.render("admin/events", { events, flash })
+})
+
+app.get("/admin/event_edit", (req, res) => {
+  res.render("admin/event_edit", { event: null, flash: null })
+})
+
+app.get("/admin/event_edit/:id", async (req, res) => {
+  try {
+    const event = await db.getEventById(req.params.id)
+    if (!event) return res.status(404).send('Event not found')
+    const flash = req.query.saved   ? { type: 'success', message: 'Event saved.' }
+                : req.query.created ? { type: 'success', message: 'Event created.' }
+                : null
+    res.render("admin/event_edit", { event, flash })
+  } catch (err) {
+    console.error(err)
+    res.status(500).send('Server error')
+  }
+})
+
+app.post("/admin/event_edit", async (req, res) => {
+  try {
+    const data = parseEventForm(req.body)
+    const id = await db.createEvent(data)
+    res.redirect(`/admin/event_edit/${id}?created=1`)
+  } catch (err) {
+    console.error(err)
+    res.render("admin/event_edit", { event: null, flash: { type: 'error', message: err.message } })
+  }
+})
+
+app.post("/admin/event_edit/:id", async (req, res) => {
+  try {
+    const data = parseEventForm(req.body)
+    await db.updateEvent(req.params.id, data)
+    res.redirect(`/admin/event_edit/${req.params.id}?saved=1`)
+  } catch (err) {
+    console.error(err)
+    const event = await db.getEventById(req.params.id).catch(() => null)
+    res.render("admin/event_edit", { event, flash: { type: 'error', message: err.message } })
+  }
+})
+
+app.delete("/admin/events/:id", async (req, res) => {
+  try {
+    await db.deleteEvent(req.params.id)
+    res.json({ ok: true })
+  } catch (err) {
+    res.status(404).json({ error: err.message })
+  }
+})
+
+function parseEventForm(body) {
+  const images = [].concat(body.images || []).filter(Boolean)
+  const name = body.name?.trim()
+  const description = body.description?.trim() || null
+  const price = parseFloat(body.price) || 0
+  const event_date = body.event_date
+  if (!name) throw new Error('Name is required')
+  if (!event_date) throw new Error('Date is required')
+  return { name, description, price, event_date, images }
+}
 
 /* ── Dealer portal ── */
 app.get("/dealer", (req, res) => {

@@ -164,6 +164,86 @@ async function deleteDealer(id) {
   if (!rowCount) throw new Error('Dealer not found')
 }
 
+async function getAllEvents() {
+  const { rows } = await pool.query(`
+    SELECT e.id, e.name, e.description, e.price, e.event_date,
+      (SELECT path FROM event_images WHERE event_id = e.id ORDER BY sort_order LIMIT 1) AS image
+    FROM events e
+    ORDER BY e.event_date ASC
+  `)
+  return rows
+}
+
+async function getUpcomingEvents() {
+  const { rows } = await pool.query(`
+    SELECT e.id, e.name, e.description, e.price, e.event_date,
+      (SELECT path FROM event_images WHERE event_id = e.id ORDER BY sort_order LIMIT 1) AS image
+    FROM events e
+    WHERE e.event_date >= NOW()
+    ORDER BY e.event_date ASC
+    LIMIT 6
+  `)
+  return rows
+}
+
+async function getEventById(id) {
+  const { rows } = await pool.query('SELECT * FROM events WHERE id=$1', [id])
+  if (!rows.length) return null
+  const event = rows[0]
+  const { rows: imgs } = await pool.query(
+    'SELECT path FROM event_images WHERE event_id=$1 ORDER BY sort_order',
+    [id]
+  )
+  return { ...event, images: imgs.map(r => r.path) }
+}
+
+async function createEvent({ name, description, price, event_date, images }) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const { rows } = await client.query(
+      'INSERT INTO events (name, description, price, event_date) VALUES ($1,$2,$3,$4) RETURNING id',
+      [name, description, price, event_date]
+    )
+    const id = rows[0].id
+    for (let i = 0; i < images.length; i++)
+      await client.query('INSERT INTO event_images (event_id, path, sort_order) VALUES ($1,$2,$3)', [id, images[i], i])
+    await client.query('COMMIT')
+    return id
+  } catch (e) {
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+  }
+}
+
+async function updateEvent(id, { name, description, price, event_date, images }) {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const { rowCount } = await client.query(
+      'UPDATE events SET name=$1, description=$2, price=$3, event_date=$4 WHERE id=$5',
+      [name, description, price, event_date, id]
+    )
+    if (!rowCount) throw new Error('Event not found')
+    await client.query('DELETE FROM event_images WHERE event_id=$1', [id])
+    for (let i = 0; i < images.length; i++)
+      await client.query('INSERT INTO event_images (event_id, path, sort_order) VALUES ($1,$2,$3)', [id, images[i], i])
+    await client.query('COMMIT')
+  } catch (e) {
+    await client.query('ROLLBACK')
+    throw e
+  } finally {
+    client.release()
+  }
+}
+
+async function deleteEvent(id) {
+  const { rowCount } = await pool.query('DELETE FROM events WHERE id=$1', [id])
+  if (!rowCount) throw new Error('Event not found')
+}
+
 async function updateProductBasic(slug, { name, badge, price, stock, desc }) {
   const { rowCount } = await pool.query(
     'UPDATE products SET name=$1, badge=$2, price=$3, description=$4, stock=$5 WHERE slug=$6',
@@ -176,4 +256,5 @@ module.exports = {
   pool, getProductBySlug, getAllProducts, createProduct, updateProduct, updateProductBasic,
   deleteProduct, getDistinctIONames,
   getDealerByCode, getAllDealers, createDealer, updateDealer, updateDealerPassword, deleteDealer,
+  getAllEvents, getUpcomingEvents, getEventById, createEvent, updateEvent, deleteEvent,
 }

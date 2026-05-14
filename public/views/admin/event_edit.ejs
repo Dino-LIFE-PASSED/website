@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/images/pag_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= event ? 'Edit Event' : 'New Event' %> — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .admin-header a   { font-size: 0.72rem; color: var(--muted); text-decoration: none; }
+    .admin-header a:hover { color: var(--text); }
+
+    .flash {
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid;
+      font-size: 0.78rem;
+    }
+    .flash-success { border-color: #2e7d32; color: #2e7d32; }
+    .flash-error   { border-color: var(--accent); color: var(--accent); }
+
+    /* Image slots */
+    .img-slots {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .img-slot {
+      position: relative;
+      aspect-ratio: 1 / 1;
+      background: var(--bg);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      transition: background 0.15s;
+    }
+
+    .img-slot:hover { background: rgba(0,0,0,0.02); }
+
+    .img-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .img-slot-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .img-slot-remove {
+      position: absolute;
+      top: 0.4rem;
+      right: 0.4rem;
+      width: 1.4rem;
+      height: 1.4rem;
+      background: rgba(255,255,255,0.9);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      font-size: 0.7rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.15s, color 0.15s;
+      color: var(--muted);
+      display: none;
+    }
+    .img-slot.has-image .img-slot-remove { display: flex; }
+    .img-slot-remove:hover { border-color: var(--accent); color: var(--accent); }
+
+    .img-slot-uploading {
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      color: var(--muted);
+      display: none;
+    }
+
+    /* Form */
+    .form-section { display: flex; flex-direction: column; gap: 1.25rem; margin-bottom: 2rem; }
+
+    .form-row { display: flex; flex-direction: column; gap: 0.4rem; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .form-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-input, .form-textarea {
+      font-family: var(--font);
+      font-size: 0.85rem;
+      color: var(--text);
+      background: transparent;
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      outline: none;
+      transition: border-color 0.15s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .form-input:focus, .form-textarea:focus { border-color: var(--text); }
+    .form-textarea { resize: vertical; min-height: 100px; }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .btn-cancel {
+      font-family: var(--font);
+      font-size: 0.72rem;
+      color: var(--muted);
+      text-decoration: none;
+    }
+    .btn-cancel:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1><%= event ? 'edit event' : 'new event' %></h1>
+      <a href="/admin/events">← events</a>
+    </div>
+
+    <% if (flash) { %>
+    <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <%
+      const existingImages = (event && event.images) ? event.images : []
+      const pad = n => String(n).padStart(2,'0')
+      let dateValue = ''
+      if (event && event.event_date) {
+        const d = new Date(event.event_date)
+        dateValue = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+      }
+    %>
+
+    <form id="event-form" method="POST" action="/admin/event_edit<%= event ? '/' + event.id : '' %>">
+
+      <!-- Image slots -->
+      <div class="img-slots">
+        <% for (let i = 0; i < 3; i++) { %>
+        <div class="img-slot <%= existingImages[i] ? 'has-image' : '' %>" id="slot-<%= i %>" onclick="triggerUpload(<%= i %>)">
+          <% if (existingImages[i]) { %>
+          <img id="slot-img-<%= i %>" src="<%= existingImages[i] %>" alt="" />
+          <% } else { %>
+          <img id="slot-img-<%= i %>" src="" alt="" style="display:none" />
+          <% } %>
+          <div class="img-slot-label" id="slot-label-<%= i %>"><%= existingImages[i] ? '' : '+ image ' + (i+1) %></div>
+          <div class="img-slot-uploading" id="slot-uploading-<%= i %>">uploading…</div>
+          <button type="button" class="img-slot-remove" onclick="removeImage(event, <%= i %>)">✕</button>
+          <input type="hidden" name="images" id="slot-val-<%= i %>" value="<%= existingImages[i] || '' %>" />
+        </div>
+        <% } %>
+      </div>
+      <input type="file" id="file-input" accept="image/*" style="display:none" />
+
+      <div class="form-section">
+        <div class="form-row">
+          <label class="form-label">event name</label>
+          <input class="form-input" type="text" name="name" value="<%= event ? event.name : '' %>" required />
+        </div>
+
+        <div class="form-row">
+          <label class="form-label">description</label>
+          <textarea class="form-textarea" name="description"><%= event ? (event.description || '') : '' %></textarea>
+        </div>
+
+        <div class="form-row-2">
+          <div class="form-row">
+            <label class="form-label">price (฿) — 0 for free</label>
+            <input class="form-input" type="number" name="price" value="<%= event ? event.price : '0' %>" min="0" step="0.01" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">date & time</label>
+            <input class="form-input" type="datetime-local" name="event_date" value="<%= dateValue %>" required />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">save event</button>
+        <a href="/admin/events" class="btn-cancel">cancel</a>
+      </div>
+
+    </form>
+
+  </div>
+
+  <script>
+    let activeSlot = null
+
+    const fileInput = document.getElementById('file-input')
+    fileInput.addEventListener('change', async function () {
+      const file = this.files[0]
+      if (!file || activeSlot === null) return
+      this.value = ''
+      const i = activeSlot
+      activeSlot = null
+
+      const uploading = document.getElementById('slot-uploading-' + i)
+      uploading.style.display = 'flex'
+
+      try {
+        const fd = new FormData()
+        fd.append('file', file)
+        const res  = await fetch('/admin/upload', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (data.error) throw new Error(data.error)
+        setSlotImage(i, data.path)
+      } catch (err) {
+        alert('Upload failed: ' + err.message)
+      } finally {
+        uploading.style.display = 'none'
+      }
+    })
+
+    function triggerUpload(i) {
+      activeSlot = i
+      fileInput.click()
+    }
+
+    function setSlotImage(i, path) {
+      const slot  = document.getElementById('slot-' + i)
+      const img   = document.getElementById('slot-img-' + i)
+      const label = document.getElementById('slot-label-' + i)
+      const val   = document.getElementById('slot-val-' + i)
+      img.src = path
+      img.style.display = 'block'
+      label.textContent = ''
+      val.value = path
+      slot.classList.add('has-image')
+    }
+
+    function removeImage(e, i) {
+      e.stopPropagation()
+      const slot  = document.getElementById('slot-' + i)
+      const img   = document.getElementById('slot-img-' + i)
+      const label = document.getElementById('slot-label-' + i)
+      const val   = document.getElementById('slot-val-' + i)
+      img.src = ''
+      img.style.display = 'none'
+      label.textContent = '+ image ' + (i + 1)
+      val.value = ''
+      slot.classList.remove('has-image')
+    }
+  </script>
+
+</body>
+</html>

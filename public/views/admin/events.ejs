@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/images/pag_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Events — PAG Admin</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    .admin-page {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 3rem 2rem 6rem;
+    }
+
+    .admin-header {
+      display: flex;
+      align-items: baseline;
+      gap: 1.5rem;
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.25rem;
+    }
+
+    .admin-header h1 { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+    .admin-header a { font-size: 0.72rem; color: var(--muted); text-decoration: none; }
+    .admin-header a:hover { color: var(--text); }
+
+    .flash {
+      padding: 0.75rem 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid;
+      font-size: 0.78rem;
+    }
+    .flash-success { border-color: #2e7d32; color: #2e7d32; }
+    .flash-error   { border-color: var(--accent); color: var(--accent); }
+
+    .toolbar {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .event-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .event-table th {
+      font-size: 0.62rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.5rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 400;
+    }
+
+    .event-table td {
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+      font-size: 0.82rem;
+    }
+
+    .event-table tr:last-child td { border-bottom: none; }
+    .event-table tbody tr { transition: background 0.1s; }
+    .event-table tbody tr:hover { background: rgba(0,0,0,0.02); }
+
+    .col-img     { width: 52px; }
+    .col-name    { }
+    .col-date    { width: 160px; }
+    .col-price   { width: 90px; }
+    .col-actions { width: 80px; text-align: right; }
+
+    .row-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .row-img-placeholder {
+      width: 40px;
+      height: 40px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.55rem;
+      color: var(--muted);
+    }
+
+    .date-cell { font-variant-numeric: tabular-nums; }
+
+    .past-tag {
+      font-size: 0.58rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.1rem 0.35rem;
+      margin-left: 0.4rem;
+    }
+
+    .row-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+    .btn-edit, .btn-delete {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      text-decoration: none;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-edit:hover   { border-color: var(--text); color: var(--text); }
+    .btn-delete:hover { border-color: var(--accent); color: var(--accent); }
+
+    .empty-state {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/navbar') %>
+
+  <div class="admin-page">
+
+    <div class="admin-header">
+      <h1>events</h1>
+      <a href="/admin">← admin</a>
+    </div>
+
+    <% if (flash) { %>
+    <div class="flash flash-<%= flash.type %>"><%= flash.message %></div>
+    <% } %>
+
+    <div class="toolbar">
+      <a href="/admin/event_edit" class="btn-primary">+ add event</a>
+    </div>
+
+    <% if (events.length) { %>
+    <table class="event-table">
+      <thead>
+        <tr>
+          <th class="col-img"></th>
+          <th class="col-name">name</th>
+          <th class="col-date">date</th>
+          <th class="col-price">price</th>
+          <th class="col-actions"></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% events.forEach(function(e) {
+          const d = new Date(e.event_date)
+          const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+          const pad = n => String(n).padStart(2,'0')
+          const dateStr = `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`
+          const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`
+          const isPast = d < new Date()
+        %>
+        <tr>
+          <td class="col-img">
+            <% if (e.image) { %>
+            <img class="row-img" src="<%= e.image %>" alt="" />
+            <% } else { %>
+            <div class="row-img-placeholder">—</div>
+            <% } %>
+          </td>
+          <td class="col-name">
+            <%= e.name %>
+            <% if (isPast) { %><span class="past-tag">past</span><% } %>
+          </td>
+          <td class="col-date date-cell"><%= dateStr %> · <%= timeStr %></td>
+          <td class="col-price"><%= Number(e.price) === 0 ? 'free' : '฿' + Number(e.price).toLocaleString('th-TH') %></td>
+          <td class="col-actions">
+            <div class="row-actions">
+              <a href="/admin/event_edit/<%= e.id %>" class="btn-edit">edit</a>
+              <button class="btn-delete" onclick="deleteEvent(<%= e.id %>, this)">delete</button>
+            </div>
+          </td>
+        </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    <% } else { %>
+    <div class="empty-state">no events yet — <a href="/admin/event_edit">add one</a></div>
+    <% } %>
+
+  </div>
+
+  <script>
+    async function deleteEvent(id, btn) {
+      if (!confirm('Delete this event?')) return
+      btn.disabled = true
+      btn.textContent = '…'
+      try {
+        const res  = await fetch(`/admin/events/${id}`, { method: 'DELETE' })
+        const data = await res.json()
+        if (!data.ok) throw new Error(data.error)
+        btn.closest('tr').remove()
+      } catch (err) {
+        alert('Delete failed: ' + err.message)
+        btn.disabled = false
+        btn.textContent = 'delete'
+      }
+    }
+  </script>
+
+</body>
+</html>

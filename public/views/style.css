@@ -575,7 +575,7 @@ canvas {
 .product-banner {
   position: relative;
   width: 100%;
-  height: 45vh;
+  height: 28vh;
   overflow: hidden;
   border-bottom: 1px solid var(--border);
 }
@@ -591,22 +591,22 @@ canvas {
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 2.5rem 3rem;
+  padding: 1.5rem 2rem;
   background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.97));
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .banner-badge {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--accent);
 }
 
 .banner-name {
-  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(1.1rem, 2.5vw, 1.8rem);
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -616,11 +616,11 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 0.25rem;
+  margin-top: 0.15rem;
 }
 
 .banner-price {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--text);
 }

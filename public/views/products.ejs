@@ -37,21 +37,29 @@
     </div>
 
     <div class="product-grid">
-      <% products.forEach(function(p) { %>
-      <div class="product-card">
-        <div class="card-img" <% if (p.image) { %>style="background-image: url('<%= p.image %>');"<% } %>></div>
-        <div class="card-info">
+      <% products.forEach(function(p) {
+        const inStock = (parseInt(p.stock) || 0) > 0
+      %>
+      <a href="/products/<%= p.slug %>" class="product-card">
+        <div class="card-img-wrap">
+          <% if (p.image) { %>
+          <img class="card-img" src="<%= p.image %>" alt="<%= p.name %>" loading="lazy" />
+          <% } else { %>
+          <div class="card-img-placeholder">&#9634;</div>
+          <% } %>
+        </div>
+        <div class="card-body">
           <div class="card-top">
-            <h3 class="card-name"><%= p.name %></h3>
+            <span class="card-name"><%= p.name %></span>
             <% if (p.badge) { %><span class="card-badge"><%= p.badge %></span><% } %>
           </div>
-          <p class="card-desc"><%= p.description %></p>
+          <span class="stock-tag <%= inStock ? 'in-stock' : 'pre-order' %>"><%= inStock ? 'in stock' : 'pre order' %></span>
           <div class="card-footer">
-            <span class="card-price">$<%= p.price %></span>
-            <a href="/products/<%= p.slug %>" class="btn-ghost">view</a>
+            <span class="card-price">฿<%= Number(p.price).toLocaleString('th-TH') %></span>
+            <span class="btn-ghost">view</span>
           </div>
         </div>
-      </div>
+      </a>
       <% }) %>
     </div>
   </section>

@@ -39,7 +39,7 @@
     <div class="product-grid">
       <% products.forEach(function(p) { %>
       <div class="product-card">
-        <div class="card-img" <% if (p.image) { %>style="background-image: url('<%= p.image %>'); background-size: cover; background-position: center;"<% } %>></div>
+        <div class="card-img" <% if (p.image) { %>style="background-image: url('<%= p.image %>');"<% } %>></div>
         <div class="card-info">
           <div class="card-top">
             <h3 class="card-name"><%= p.name %></h3>

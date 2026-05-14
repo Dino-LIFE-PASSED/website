@@ -3,7 +3,7 @@ const express = require("express")
 const path = require("path")
 const fs = require("fs")
 const multer = require("multer")
-const session = require("express-session")
+const cookieSession = require("cookie-session")
 const bcrypt = require("bcrypt")
 const db = require("./db")
 const app = express()
@@ -49,11 +49,10 @@ const logoUpload = multer({
 app.set("view engine", "ejs")
 app.set("views", path.join(__dirname, "public/views"))
 
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'pag-dealer-secret-key',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 8 * 60 * 60 * 1000 }
+app.use(cookieSession({
+  name: 'dealer',
+  keys: [process.env.SESSION_SECRET || 'pag-dealer-secret-key'],
+  maxAge: 30 * 24 * 60 * 60 * 1000,
 }))
 
 app.use(express.static(path.join(__dirname, "public")))
@@ -255,7 +254,7 @@ app.post("/dealer/login", async (req, res) => {
 })
 
 app.get("/dealer/logout", (req, res) => {
-  req.session.destroy()
+  req.session = null
   res.redirect('/dealer/login')
 })
 

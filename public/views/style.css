@@ -484,9 +484,13 @@ canvas {
 .product-main:hover { border-color: var(--text); }
 
 .product-img-placeholder {
-  flex: 1;
-  background: var(--border);
-  min-height: 0;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background-color: #fff;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  flex-shrink: 0;
 }
 
 .product-main .product-info {

@@ -57,7 +57,7 @@
       <div class="products-featured">
 
         <div class="product-main">
-          <div class="product-img-placeholder" <% if (mainProduct.image) { %>style="background-image: url('<%= mainProduct.image %>'); background-size: cover; background-position: center;"<% } %>></div>
+          <div class="product-img-placeholder" <% if (mainProduct.image) { %>style="background-image: url('<%= mainProduct.image %>');"<% } %>></div>
           <div class="product-info">
             <% if (mainProduct.badge) { %><span class="product-badge"><%= mainProduct.badge %></span><% } %>
             <h3 class="product-name"><%= mainProduct.name %></h3>

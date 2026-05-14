@@ -1,6 +1,15 @@
 const { Pool } = require('pg')
+const fs = require('fs')
+const path = require('path')
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+
+async function initSchema() {
+  const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8')
+  await pool.query(sql)
+}
+
+initSchema().catch(err => console.error('Schema init failed:', err.message))
 
 async function getProductBySlug(slug) {
   const { rows: products } = await pool.query(

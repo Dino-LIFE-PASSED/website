@@ -277,7 +277,7 @@ body {
   padding: 0.65rem 1.4rem;
   border-radius: 2px;
   border: 1px solid var(--border);
-  transition: border-color 0.5s ease, color 0.5s ease;
+  transition: border-color 0.15s, color 0.15s;
 }
 
 .btn-ghost:hover {
@@ -429,7 +429,7 @@ canvas {
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;
-  transition: border-color 0.5s ease;
+  transition: border-color 0.15s;
   min-height: 0;
 }
 
@@ -477,7 +477,7 @@ canvas {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.5s ease;
+  transition: border-color 0.15s;
   min-height: 0;
 }
 
@@ -551,7 +551,7 @@ canvas {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: border-color 0.5s ease;
+  transition: border-color 0.15s;
   min-height: 0;
 }
 
@@ -647,7 +647,7 @@ canvas {
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  transition: background 0.5s ease;
+  transition: background 0.15s;
 }
 
 .product-card:hover { background: rgba(0,0,0,0.015); }

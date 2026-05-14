@@ -89,6 +89,33 @@
     .search-input:focus { border-color: var(--text); }
     .search-input::placeholder { color: var(--muted); }
 
+    .btn-import {
+      font-family: var(--font);
+      font-size: 0.68rem;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: none;
+      color: var(--muted);
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+    .btn-import:hover { border-color: var(--text); color: var(--text); }
+
+    .import-result {
+      display: none;
+      margin-bottom: 1.25rem;
+      padding: 0.85rem 1rem;
+      border: 1px solid var(--border);
+      font-size: 0.78rem;
+    }
+    .import-result.success { border-color: #2e7d32; }
+    .import-result.error   { border-color: var(--accent); color: var(--accent); }
+    .import-result .import-summary { font-weight: 600; margin-bottom: 0.35rem; }
+    .import-result .import-errors  { margin-top: 0.5rem; color: var(--muted); font-size: 0.72rem; }
+    .import-result .import-errors li { list-style: none; padding: 0.1rem 0; }
+
     /* Table */
     .product-table {
       width: 100%;
@@ -228,7 +255,15 @@
     <!-- Toolbar -->
     <div class="toolbar">
       <input class="search-input" type="text" id="search" placeholder="search products…" oninput="filterTable(this.value)" />
+      <a href="/admin/products/csv-template" class="btn-import">download template</a>
+      <button class="btn-import" onclick="document.getElementById('csv-file-input').click()">import CSV</button>
+      <input type="file" id="csv-file-input" accept=".csv" style="display:none" onchange="importCSV(this)" />
       <a href="/admin/product_edit" class="btn-primary">+ add product</a>
+    </div>
+
+    <div class="import-result" id="import-result">
+      <div class="import-summary" id="import-summary"></div>
+      <ul class="import-errors" id="import-errors"></ul>
     </div>
 
     <!-- Table -->
@@ -288,6 +323,45 @@
         if (match) visible++
       })
       document.getElementById('no-results').style.display = visible === 0 && term ? 'block' : 'none'
+    }
+
+    async function importCSV(input) {
+      const file = input.files[0]
+      if (!file) return
+      input.value = ''
+      const resultBox = document.getElementById('import-result')
+      const summary   = document.getElementById('import-summary')
+      const errorList = document.getElementById('import-errors')
+      resultBox.style.display = 'block'
+      resultBox.className = 'import-result'
+      summary.textContent = 'importing…'
+      errorList.innerHTML = ''
+      const fd = new FormData()
+      fd.append('csv', file)
+      try {
+        const res  = await fetch('/admin/products/import', { method: 'POST', body: fd })
+        const data = await res.json()
+        if (!res.ok || data.error) {
+          resultBox.classList.add('error')
+          summary.textContent = data.error || 'Import failed'
+          return
+        }
+        resultBox.classList.add('success')
+        summary.textContent = `Done — ${data.created} created, ${data.updated} updated, ${data.skipped} skipped`
+        if (data.errors.length) {
+          data.errors.forEach(e => {
+            const li = document.createElement('li')
+            li.textContent = e
+            errorList.appendChild(li)
+          })
+        }
+        if (data.created > 0 || data.updated > 0) {
+          setTimeout(() => location.reload(), 1200)
+        }
+      } catch (err) {
+        resultBox.classList.add('error')
+        summary.textContent = 'Network error: ' + err.message
+      }
     }
 
     async function deleteProduct(slug, btn) {

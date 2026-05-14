@@ -117,6 +117,38 @@ function parseProductForm(body) {
   }
 }
 
+const csvUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 2 * 1024 * 1024 } })
+
+function parseCSV(text) {
+  const result = []
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
+  for (const line of lines) {
+    if (!line.trim()) continue
+    const row = []
+    let i = 0
+    while (i < line.length) {
+      if (line[i] === '"') {
+        let field = ''
+        i++
+        while (i < line.length) {
+          if (line[i] === '"' && line[i + 1] === '"') { field += '"'; i += 2 }
+          else if (line[i] === '"') { i++; break }
+          else { field += line[i++] }
+        }
+        row.push(field)
+        if (line[i] === ',') i++
+      } else {
+        let field = ''
+        while (i < line.length && line[i] !== ',') field += line[i++]
+        if (line[i] === ',') i++
+        row.push(field.trim())
+      }
+    }
+    result.push(row)
+  }
+  return result
+}
+
 app.post("/admin/upload", upload.single("file"), (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file received" })
   res.json({ path: `/images/product_images/${req.file.filename}` })
@@ -177,6 +209,67 @@ app.delete("/admin/products/:slug", async (req, res) => {
   } catch (err) {
     res.status(404).json({ error: err.message })
   }
+})
+
+app.get("/admin/products/csv-template", (req, res) => {
+  const rows = [
+    ['slug', 'name', 'badge', 'price', 'stock', 'description'],
+    ['my-product-slug', 'My Product Name', 'featured', '9990', '10', 'Short product description'],
+  ]
+  const csv = rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n')
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', 'attachment; filename="PAG-products-template.csv"')
+  res.send('﻿' + csv)
+})
+
+app.post("/admin/products/import", csvUpload.single("csv"), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded' })
+  const text = req.file.buffer.toString('utf8').replace(/^﻿/, '')
+  const rows = parseCSV(text)
+  if (rows.length < 2) return res.json({ created: 0, updated: 0, skipped: 0, errors: [] })
+
+  const headers = rows[0].map(h => h.toLowerCase().trim())
+  for (const col of ['slug', 'name', 'price']) {
+    if (!headers.includes(col)) return res.status(400).json({ error: `Missing required column: ${col}` })
+  }
+
+  const ci = h => headers.indexOf(h)
+  let created = 0, updated = 0, skipped = 0
+  const errors = []
+
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i]
+    if (row.every(c => !c)) continue
+    const slug  = row[ci('slug')]?.trim()
+    const name  = row[ci('name')]?.trim()
+    const price = parseFloat(row[ci('price')])
+    if (!slug || !name || isNaN(price)) {
+      skipped++
+      errors.push(`Row ${i + 1}: missing slug, name, or valid price`)
+      continue
+    }
+    const badge = ci('badge') >= 0 ? (row[ci('badge')]?.trim() || null) : null
+    const stock = ci('stock') >= 0 ? (parseInt(row[ci('stock')]) || 0) : 0
+    const desc  = ci('description') >= 0 ? (row[ci('description')]?.trim() || '') : ''
+    try {
+      await db.updateProductBasic(slug, { name, badge, price, stock, desc })
+      updated++
+    } catch (err) {
+      if (err.message === 'Product not found') {
+        try {
+          await db.createProduct({ slug, name, badge, price, stock, desc, images: [], inputs: [], outputs: [], specs: [] })
+          created++
+        } catch (e) {
+          skipped++
+          errors.push(`Row ${i + 1} (${slug}): ${e.message}`)
+        }
+      } else {
+        skipped++
+        errors.push(`Row ${i + 1} (${slug}): ${err.message}`)
+      }
+    }
+  }
+  res.json({ created, updated, skipped, errors })
 })
 
 app.get("/admin/product_edit", (req, res) => {

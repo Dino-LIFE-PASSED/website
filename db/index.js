@@ -164,7 +164,16 @@ async function deleteDealer(id) {
   if (!rowCount) throw new Error('Dealer not found')
 }
 
+async function updateProductBasic(slug, { name, badge, price, stock, desc }) {
+  const { rowCount } = await pool.query(
+    'UPDATE products SET name=$1, badge=$2, price=$3, description=$4, stock=$5 WHERE slug=$6',
+    [name, badge || null, price, desc, stock ?? 0, slug]
+  )
+  if (!rowCount) throw new Error('Product not found')
+}
+
 module.exports = {
-  pool, getProductBySlug, getAllProducts, createProduct, updateProduct, deleteProduct, getDistinctIONames,
+  pool, getProductBySlug, getAllProducts, createProduct, updateProduct, updateProductBasic,
+  deleteProduct, getDistinctIONames,
   getDealerByCode, getAllDealers, createDealer, updateDealer, updateDealerPassword, deleteDealer,
 }

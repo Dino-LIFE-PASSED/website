@@ -16,11 +16,11 @@
   <main class="hero">
 
     <!-- Events -->
-    <% if (events.length) { %>
     <div class="section-events">
       <p class="section-tag">upcoming events</p>
       <h2 class="section-title">what's on</h2>
       <div class="events-grid">
+        <% if (events.length) { %>
         <% events.forEach(function(ev) {
           const d = new Date(ev.event_date)
           const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
@@ -38,9 +38,17 @@
           </div>
         </div>
         <% }) %>
+        <% } else { %>
+        <div class="event-card event-card-empty">
+          <div class="event-info">
+            <span class="event-date">—</span>
+            <h3 class="event-name">no upcoming events</h3>
+            <p class="event-location">check back soon</p>
+          </div>
+        </div>
+        <% } %>
       </div>
     </div>
-    <% } %>
 
     <!-- Products -->
     <% if (products.length) { %>

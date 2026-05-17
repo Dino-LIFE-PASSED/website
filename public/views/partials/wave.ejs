@@ -96,6 +96,17 @@
         }
       }
 
+      ctx.lineWidth = 1
+      for (let c = 0; c < cols; c++) {
+        const filled = Math.round(heights[c])
+        const x      = c * PIXEL
+        ctx.strokeStyle = glowColor(c)
+        for (let r = 0; r < filled; r++) {
+          const y = GLOW + VISIBLE - (r + 1) * PIXEL
+          ctx.strokeRect(x + GAP + 0.5, y + GAP + 0.5, PIXEL - GAP * 2 - 1, PIXEL - GAP * 2 - 1)
+        }
+      }
+
       tick++
     }
 

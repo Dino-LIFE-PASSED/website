@@ -71,10 +71,6 @@ app.get("/api/logos", (req, res) => {
   res.json(files.map(file => ({ file, url: urls[file] || "" })))
 })
 
-app.get("/preview/shapes-bg", (req, res) => {
-  res.render("preview/shapes-bg")
-})
-
 app.get("/", async (req, res) => {
   const [products, events] = await Promise.all([db.getAllProducts(), db.getUpcomingEvents()])
   res.render("home", { products, events })

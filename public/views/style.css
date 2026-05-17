@@ -351,16 +351,24 @@ canvas {
       align-items: center;
       gap: 4rem;
       width: max-content;
-      animation: scroll-left 40s linear infinite;
+      will-change: transform;
+      -webkit-animation: scroll-left 40s linear infinite;
+              animation: scroll-left 40s linear infinite;
     }
 
     .partners-track:hover {
-      animation-play-state: paused;
+      -webkit-animation-play-state: paused;
+              animation-play-state: paused;
+    }
+
+    @-webkit-keyframes scroll-left {
+      0%   { -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); }
+      100% { -webkit-transform: translate3d(-50%, 0, 0); transform: translate3d(-50%, 0, 0); }
     }
 
     @keyframes scroll-left {
-      0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      0%   { -webkit-transform: translate3d(0, 0, 0); transform: translate3d(0, 0, 0); }
+      100% { -webkit-transform: translate3d(-50%, 0, 0); transform: translate3d(-50%, 0, 0); }
     }
 
     .partner-logo {

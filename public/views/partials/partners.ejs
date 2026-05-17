@@ -36,6 +36,13 @@
       })
       fill()
       document.documentElement.style.setProperty('--partnerbar-height', partnerbar.offsetHeight + 'px')
+      // Force animation restart on iOS Safari — layout must settle before animation kicks in
+      track.style.animation = 'none'
+      track.style.webkitAnimation = 'none'
+      requestAnimationFrame(() => {
+        track.style.animation = ''
+        track.style.webkitAnimation = ''
+      })
     })
 
   window.addEventListener('resize', fill)

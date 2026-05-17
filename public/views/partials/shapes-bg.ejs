@@ -1,0 +1,84 @@
+<div class="shapes-bg" id="shapes-bg"></div>
+
+<style>
+.shapes-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.shp {
+  position: absolute;
+  opacity: 0;
+  user-select: none;
+  width: 1.4rem;
+  height: 1.4rem;
+  object-fit: contain;
+  transition: opacity var(--fd-in) ease;
+}
+</style>
+
+<script>
+;(function () {
+  const container = document.getElementById('shapes-bg')
+  const SVGS = [
+    '/svg_bg/Coding-Apps-Websites-Music-Player--Streamline-Pixel.svg',
+    '/svg_bg/Computers-Devices-Electronics-Tape-Cassette--Streamline-Pixel.svg',
+    '/svg_bg/Food-Drink-Coffee--Streamline-Pixel.svg',
+    '/svg_bg/Food-Drink-Pizza--Streamline-Pixel.svg',
+    '/svg_bg/Music-Album-Cd-Disk-Playlist--Streamline-Pixel.svg',
+    '/svg_bg/Music-Disk-Cd-1--Streamline-Pixel.svg',
+    '/svg_bg/Music-Disk-Cd-2--Streamline-Pixel.svg',
+    '/svg_bg/Music-Headphones-Human--Streamline-Pixel.svg',
+    '/svg_bg/Music-Microphone-1--Streamline-Pixel.svg',
+    '/svg_bg/Music-Microphone-2--Streamline-Pixel.svg',
+    '/svg_bg/Music-Notes-Music-1--Streamline-Pixel.svg',
+    '/svg_bg/Music-Notes-Music-2--Streamline-Pixel.svg',
+    '/svg_bg/Music-Radio-Stereo--Streamline-Pixel.svg',
+    '/svg_bg/Music-Speaker--Streamline-Pixel.svg',
+    '/svg_bg/Music-Vinyl-Record--Streamline-Pixel.svg',
+    '/svg_bg/Music-Walkman-Cassette--Streamline-Pixel.svg',
+    '/svg_bg/Video-Movies-Play--Streamline-Pixel.svg',
+  ]
+
+  function rand(a, b) { return Math.random() * (b - a) + a }
+
+  function spawn() {
+    const el     = document.createElement('img')
+    el.className = 'shp'
+
+    const x       = rand(0, 100)
+    const y       = rand(0, 100)
+    const fadeIn  = rand(0.3, 0.8)
+    const hold    = rand(1.6, 4.8)
+    const fadeOut = rand(0.3, 0.8)
+    const isDark  = document.documentElement.getAttribute('data-theme') === 'dark'
+
+    el.src            = SVGS[Math.floor(Math.random() * SVGS.length)]
+    el.style.cssText  = `left:${x}%;top:${y}%;filter:${isDark ? 'brightness(0) invert(1)' : 'brightness(0)'};--fd-in:${fadeIn}s;`
+    container.appendChild(el)
+
+    /* fade in */
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      el.style.opacity = 0.4
+    }))
+
+    /* fade out after hold */
+    setTimeout(() => {
+      el.style.transition = `opacity ${fadeOut}s ease`
+      el.style.opacity    = 0
+      setTimeout(() => el.remove(), fadeOut * 1000 + 100)
+    }, (fadeIn + hold) * 1000)
+  }
+
+  /* 10 independent spawners, each starts at a different random offset */
+  for (let i = 0; i < 10; i++) {
+    setTimeout(function loop() {
+      spawn()
+      setTimeout(loop, rand(2500, 5000))
+    }, rand(0, 6000))
+  }
+})()
+</script>

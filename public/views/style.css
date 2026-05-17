@@ -316,6 +316,7 @@ canvas {
       overflow: hidden;
       padding: 1rem 0;
       border-bottom: 1px solid var(--border);
+      background: var(--bg);
     }
 
     /* Fade edges */
@@ -435,6 +436,7 @@ canvas {
 
 .event-card {
   flex: 1;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;
@@ -482,6 +484,7 @@ canvas {
 }
 
 .product-main {
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;
@@ -556,6 +559,7 @@ canvas {
 
 .product-side-card {
   flex: 1;
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 2px;
   overflow: hidden;

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="icon" type="image/png" href="/images/pag_logo.png" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preview — Shapes BG</title>
+  <link rel="stylesheet" href="/views/style.css" />
+  <style>
+    body { margin: 0; min-height: 100vh; }
+    .preview-label {
+      position: fixed;
+      top: 1.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      z-index: 10;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <%- include('../partials/shapes-bg') %>
+
+  <p class="preview-label">shapes-bg preview — <a href="/" style="color:inherit">← back</a></p>
+
+</body>
+</html>

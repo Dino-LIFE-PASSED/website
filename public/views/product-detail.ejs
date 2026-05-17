@@ -27,7 +27,7 @@
           <% } %>
         </div>
       </div>
-      <div class="pd-main-img" id="pd-main-img">
+      <div class="pd-main-img" id="pd-main-img" data-image-count="<%= product.images.length %>">
         <img src="<%= product.images[0] %>" alt="<%= product.name %>" id="pd-main-img-el" />
       </div>
     </div>
@@ -37,7 +37,7 @@
       const strip    = document.querySelector('.pd-thumbs')
       const thumbTrack = document.getElementById('pd-thumbs-track')
       const mainImg  = document.getElementById('pd-main-img-el')
-      const imageCount = <%= product.images.length %>
+      const imageCount = parseInt(document.getElementById('pd-main-img').dataset.imageCount, 10)
 
       /* Click: update main image (works on all 4 copies) */
       thumbTrack.addEventListener('click', e => {
